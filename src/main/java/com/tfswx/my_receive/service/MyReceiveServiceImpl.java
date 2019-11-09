@@ -601,9 +601,9 @@ public class MyReceiveServiceImpl implements MyReceiveService {
         if (fileList.size() == 0) {
             return;
         }
-        log.info("--------"+No_Find_Times+"次未找到再次查找未找到文件开始--------");
-        log.info(No_Find_Times+"次未找到文件的查找时间：" + getStr4Date(new Date()));
-        log.info(No_Find_Times+"次未找到文件的数量：" + fileList.size());
+        log.info("--------"+No_Find_Times+"次内未找到再次查找未找到文件开始--------");
+        log.info(No_Find_Times+"次内未找到文件的查找时间：" + getStr4Date(new Date()));
+        log.info(No_Find_Times+"次内未找到文件的数量：" + fileList.size());
         //遍历数据，有文件则写入文件并删除记录，无文件则未找到次数+1
         for (MyFile myFile : fileList) {
             switch (myFile.getFileType()) {
@@ -616,7 +616,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
                 default:
             }
         }
-        log.info("--------"+No_Find_Times+"次未找到再次查找未找到文件结束--------");
+        log.info("--------"+No_Find_Times+"次内未找到再次查找未找到文件结束--------");
     }
 
     /**
@@ -629,9 +629,9 @@ public class MyReceiveServiceImpl implements MyReceiveService {
         if (fileList.size() == 0) {
             return;
         }
-        log.info("--------"+(No_Find_Times*2)+"次未找到再次查找未找到文件开始--------");
-        log.info((No_Find_Times*2)+"次未找到没找到的查找时间：" + getStr4Date(new Date()));
-        log.info((No_Find_Times*2)+"次未找到没找到的文件数量：" + fileList.size());
+        log.info("--------"+(No_Find_Times*2)+"次内未找到再次查找未找到文件开始--------");
+        log.info((No_Find_Times*2)+"次内未找到没找到的查找时间：" + getStr4Date(new Date()));
+        log.info((No_Find_Times*2)+"次内未找到没找到的文件数量：" + fileList.size());
         //遍历数据，有文件则写入文件并删除记录，无文件则未找到次数+1
         for (MyFile myFile : fileList) {
             switch (myFile.getFileType()) {
@@ -644,7 +644,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
                 default:
             }
         }
-        log.info("--------"+(No_Find_Times*2)+"次未找到再次查找未找到文件结束--------");
+        log.info("--------"+(No_Find_Times*2)+"次内未找到再次查找未找到文件结束--------");
     }
 
     /**
@@ -654,6 +654,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
      */
     public void writeNoFile(Integer findTime) {
         List<MyFile> fileList = fileReceiveMapper.getNoFileByFindTime(findTime);
+        log.info("未找到的文件数量为："+fileList.size());
         if (fileList.size() == 0) {
             return;
         }

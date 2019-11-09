@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>目的端配置修改</title>
+    <title>目的端配置</title>
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <script src="jquery-3.3.1.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
@@ -81,7 +81,7 @@
             chageThis.empty();
             switch (myId) {
                 case 'wsPath':
-                   chageThis.append('<input type="text" placeholder="格式：D:\文件名">');
+                    chageThis.append('<input type="text" placeholder="格式：D:\文件名">');
                     chageThis.children().val(text);
                     break;
                 case 'dzjzPath':
@@ -89,11 +89,11 @@
                     chageThis.children().val(text);
                     break;
                 case 'dwbm':
-                    chageThis.append('<textarea type="text" style="width: 100%" placeholder="格式：510000,510001 或 510000-510001"></textarea>');
+                    chageThis.append('<textarea type="text" style="width: 100%" placeholder="不配置意味同步HS目的端库里所有，配置格式：510000,510001 或 510000-510001"></textarea>');
                     chageThis.children().text(text);
                     break;
                 case 'typeRestriction':
-                    chageThis.append('<textarea type="text" style="width: 100%"  placeholder="格式：0201,0301"></textarea>');
+                    chageThis.append('<textarea type="text" style="width: 100%"  placeholder="不配置意味同步HS目的端库里所有案件类型，格式：0201,0301"></textarea>');
                     chageThis.children().text(text);
                     break;
 
@@ -143,52 +143,52 @@
         function updateFileIsDecrypt(isWs,el){
 
             $.post("/myReceive/updateFileIsDecrypt", {"isWs": isWs}, function (result) {
-               if(result.state == 0){
-                   if(el.value == '解密'){
-                       el.value = '不解密';
-                       $(el).parent().prev().text('是');
-                   }else {
-                       el.value = '解密';
+                if(result.state == 0){
+                    if(el.value == '解密'){
+                        el.value = '不解密';
+                        $(el).parent().prev().text('是');
+                    }else {
+                        el.value = '解密';
                         $(el).parent().prev().text('否');
-                   }
-                   alert(result.data);
-               }else {
-                   alert(result.message);
-               }
+                    }
+                    alert(result.data);
+                }else {
+                    alert(result.message);
+                }
             })
         }
 
 
         function updateDwbm(el){
             $.post("/myReceive/updateDwbm", {"dwbm": $("#dwbm").children().val()}, function (result) {
-               if(result.state == 0){
-                   commitSuccess(el);
-                   alert(result.data);
-               }else {
-                   alert(result.message);
-               }
+                if(result.state == 0){
+                    commitSuccess(el);
+                    alert(result.data);
+                }else {
+                    alert(result.message);
+                }
             })
         }
 
         function updateTypeRestriction(el){
             $.post("/myReceive/updateTypeRestriction", {"typeRestriction": $("#typeRestriction").children().val()}, function (result) {
-               if(result.state == 0){
-                   commitSuccess(el);
-                   alert(result.data);
-               }else {
-                   alert(result.message);
-               }
+                if(result.state == 0){
+                    commitSuccess(el);
+                    alert(result.data);
+                }else {
+                    alert(result.message);
+                }
             })
         }
 
         function updateSendIP(isWs,el){
             $.post("/myReceive/updateSendIP", {isWs:isWs,"sendIP": isWs?$("#wsSendIP").children().val():$("#dzjzSendIP").children().val()}, function (result) {
-               if(result.state == 0){
-                   commitSuccess(el);
-                   alert(result.data);
-               }else {
-                   alert(result.message);
-               }
+                if(result.state == 0){
+                    commitSuccess(el);
+                    alert(result.data);
+                }else {
+                    alert(result.message);
+                }
             })
         }
 
@@ -263,7 +263,7 @@
                 <th width="360px">电子卷宗存放地址</th>
                 <td id="dzjzPath"></td>
                 <td><input type="button" value="修改" onclick="updateThis(this)">
-                <input type="button" value="确定" onclick="updateFilePathTitle(false,this)" style="display: none">
+                    <input type="button" value="确定" onclick="updateFilePathTitle(false,this)" style="display: none">
                 </td>
             </tr>
 
@@ -277,30 +277,30 @@
             </tr>
 
             <tr>
-                <th>同步单位</th>
+                <th>同步单位设置</th>
                 <!--<textarea style="width: 100%"></textarea>-->
                 <td colspan="4" id="dwbm"></td>
                 <td>
                     <input type="button"  value="修改" onclick="updateThis(this)">
-                <input type="button" value="确定" onclick="updateDwbm(this)" style="display: none">
+                    <input type="button" value="确定" onclick="updateDwbm(this)" style="display: none">
                 </td>
             </tr>
             <tr>
-                <th>同步类型限制</th>
+                <th>同步案件类别设置</th>
                 <td colspan="4" id="typeRestriction"></td>
                 <td><input type="button"  value="修改" onclick="updateThis(this)">
-                <input type="button" value="确定" onclick="updateTypeRestriction(this)" style="display: none">
+                    <input type="button" value="确定" onclick="updateTypeRestriction(this)" style="display: none">
                 </td>
             </tr>
             <tr>
-                <th>文书请求IP地址</th>
+                <th>文书源端IP</th>
                 <td  id="wsSendIP"></td>
                 <td>
                     <input type="button" class="myUpdate" value="修改" onclick="updateThis(this)">
                     <input type="button" value="确定" onclick="updateSendIP(true,this)" style="display: none">
                 </td>
 
-                <th>电子卷宗请求IP地址</th>
+                <th>电子卷宗请源端IP</th>
                 <td  id="dzjzSendIP"></td>
                 <td>
                     <input type="button" class="myUpdate" value="修改" onclick="updateThis(this)">
@@ -309,12 +309,12 @@
 
             </tr>
             <!--<tr>-->
-                <!--<th>文书实时同步(关闭/开启)</th>-->
-                <!--<td id="wsFileIsSynchronizationNow"></td>-->
-                <!--<td><input type="button" value="开启" onclick="openReceiveNow(true,this)"></td>-->
-                <!--<th>电子卷宗实时同步(关闭/开启)</th>-->
-                <!--<td id="dzjzFileIsSynchronizationNow"></td>-->
-                <!--<td><input type="button" value="开启" onclick="openReceiveNow(false,this)"></td>-->
+            <!--<th>文书实时同步(关闭/开启)</th>-->
+            <!--<td id="wsFileIsSynchronizationNow"></td>-->
+            <!--<td><input type="button" value="开启" onclick="openReceiveNow(true,this)"></td>-->
+            <!--<th>电子卷宗实时同步(关闭/开启)</th>-->
+            <!--<td id="dzjzFileIsSynchronizationNow"></td>-->
+            <!--<td><input type="button" value="开启" onclick="openReceiveNow(false,this)"></td>-->
             <!--</tr>-->
             <tr>
                 <th>文书是否在同步</th>
@@ -338,17 +338,17 @@
             </tr>
 
             <tr>
-                <th>文书初始同步起始时间(文书创建时间)</th>
+                <th>文书初始化同步起始时间(文书创建时间)</th>
                 <td colspan="2"><input type="text" id="wsStartTime" placeholder="请选择时间"></td>
-                <th>电子卷宗初始同步起始时间(卷宗创建时间)</th>
+                <th>电子卷宗初始化同步起始时间(卷宗创建时间)</th>
                 <td colspan="2"><input type="text" id="dzjzStartTime" placeholder="请选择时间"></td>
 
             </tr>
             <tr>
 
-                <th>文书初始同步截止时间(文书创建时间)</th>
+                <th>文书初始化同步截止时间(文书创建时间)</th>
                 <td colspan="2"><input type="text" id="wsEndTime" placeholder="请选择时间"></td>
-                <th>电子卷宗初始同步截止时间(卷宗创建时间)</th>
+                <th>电子卷宗初始化同步截止时间(卷宗创建时间)</th>
                 <td colspan="2"><input type="text" id="dzjzEndTime" placeholder="请选择时间"></td>
 
             </tr>

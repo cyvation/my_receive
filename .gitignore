@@ -1,6 +1,9 @@
 /target/
 !.mvn/wrapper/maven-wrapper.jar
 logs
+lib
+.mvn
+
 ### STS ###
 .apt_generated
 .classpath

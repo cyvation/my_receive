@@ -83,7 +83,8 @@
                 $("#dzjzTbNum").text(dzjz.fileNum);
                 $("#dwbm").text(result.dwbm);
                 $("#typeRestriction").text(result.typeRestriction);
-                $("#sendIP").text("文书源端IP："+result.sendIP.w+"   ；  电子卷宗源端IP："+result.sendIP.d);
+                $("#wsSendIP").text(result.sendIP.w);
+                $("#dzjzSendIP").text(result.sendIP.d);
 
                 $("#wsStartTime").text(ws.startDate==null ? '': new Date(ws.startDate).format("yyyy-MM-dd hh:mm:ss"));
                 $("#wsEndTime").text(ws.endDate==null ? '': new Date(ws.endDate).format("yyyy-MM-dd hh:mm:ss"));
@@ -134,17 +135,21 @@
                 <td id="dzjzIsDecrypt" colspan="2"></td>
             </tr>
             <tr>
-                <th>同步单位</th>
+                <th>同步的单位</th>
                 <td colspan="5" id="dwbm"></td>
             </tr>
             <tr>
-                <th>同步类型限制</th>
+                <th>同步的案件类别</th>
                 <td colspan="5" id="typeRestriction"></td>
             </tr>
+
             <tr>
-                <th>源端IP</th>
-                <td colspan="5" id="sendIP"></td>
+                <th>文书源端IP</th>
+                <td id="wsSendIP" colspan="2"></td>
+                <th>电子卷宗源端IP</th>
+                <td id="dzjzSendIP" colspan="2"></td>
             </tr>
+
             <tr>
                 <th>文书实时同步(关闭/开启)</th>
                 <td colspan="2"  id="wsFileIsSynchronizationNow"></td>
@@ -158,9 +163,9 @@
                 <td colspan="2" id="dzjzFileIsSynchronization"></td>
             </tr>
             <tr>
-                <th>文书同步数量</th>
+                <th>文书处理数量</th>
                 <td id="wsTbNum" colspan="2"></td>
-                <th>电子卷宗同步数量</th>
+                <th>电子卷宗处理数量</th>
                 <td id="dzjzTbNum" colspan="2"></td>
             </tr>
            <tr>
@@ -176,9 +181,9 @@
                 <td id="dzjzStartTime" colspan="2"></td>
             </tr>
             <tr>
-                <th>文书初始同步截止(文书创建时间)</th>
+                <th>文书初始化同步截止(文书创建时间)</th>
                 <td id="wsEndTime" colspan="2"></td>
-                <th>电子卷宗初始同步截止(卷宗创建时间)</th>
+                <th>电子卷宗初始化同步截止(卷宗创建时间)</th>
                 <td id="dzjzEndTime" colspan="2"></td>
             </tr>
             <tr>
