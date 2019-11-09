@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>目的端信息查看</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="jquery-3.3.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="laydate/laydate.js"></script> <!-- 改成你的路径 -->
+    <script>
+        // 对Date的扩展，将 Date 转化为指定格式的String
+        // 月(M)、日(d)、小时(H)、分(m)、秒(s)、季度(q) 可以用 1-2 个占位符，
+        // 年(y)可以用 1-4 个占位符，毫秒(S)只能用 1 个占位符(是 1-3 位的数字)
+        // 例子：
+        // (new Date()).Format("yyyy-MM-dd HH:mm:ss.S") ==> 2006-07-02 08:09:04.423
+        // (new Date()).Format("yyyy-M-d H:m:s.S")      ==> 2006-7-2 8:9:4.18
+        Date.prototype.format = function(fmt) {
+            var o = {
+                "M+" : this.getMonth()+1,                 //月份
+                "d+" : this.getDate(),                    //日
+                "h+" : this.getHours(),                   //小时
+                "m+" : this.getMinutes(),                 //分
+                "s+" : this.getSeconds(),                 //秒
+                "q+" : Math.floor((this.getMonth()+3)/3), //季度
+                "S"  : this.getMilliseconds()             //毫秒
+            };
+            if(/(y+)/.test(fmt)) {
+                fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length));
+            }
+            for(var k in o) {
+                if(new RegExp("("+ k +")").test(fmt)){
+                    fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
+                }
+            }
+            return fmt;
+        };
+
+        var count = 0;
+
+        function getInfo() {
+            $.get("/myReceive/getInfo", {}, function (result) {
+                var ws = result["ws"];
+                var dzjz = result["dzjz"];
+                $("#wsPath").text(ws.filePathTitle);
+                $("#dzjzPath").text(dzjz.filePathTitle);
+                if (ws.fileIsDecrypt) {
+                    $("#wsIsDecrypt").text("是");
+                } else {
+                    $("#wsIsDecrypt").text("否");
+                }
+                if (dzjz.fileIsDecrypt) {
+                    $("#dzjzIsDecrypt").text("是");
+                } else {
+                    $("#dzjzIsDecrypt").text("否");
+                }
+
+                if (ws.fileIsSynchronization) {
+                    $("#wsFileIsSynchronization").text("是");
+                } else {
+                    $("#wsFileIsSynchronization").text("否");
+
+                }
+                if (dzjz.fileIsSynchronization) {
+                    $("#dzjzFileIsSynchronization").text("是");
+                } else {
+                    $("#dzjzFileIsSynchronization").text("否");
+                }
+
+                if (ws.fileIsSynchronizationNow) {
+                    $("#wsFileIsSynchronizationNow").text("已开启");
+                } else {
+                    $("#wsFileIsSynchronizationNow").text("已关闭");
+
+                }
+                if (dzjz.fileIsSynchronizationNow) {
+                    $("#dzjzFileIsSynchronizationNow").text("已开启");
+                } else {
+                    $("#dzjzFileIsSynchronizationNow").text("已关闭");
+                }
+                $("#wsNoFileNum").text(ws.noFileNum);
+                $("#dzjzNoFileNum").text(dzjz.noFileNum);
+                $("#wsTbNum").text(ws.fileNum);
+                $("#dzjzTbNum").text(dzjz.fileNum);
+                $("#dwbm").text(result.dwbm);
+                $("#typeRestriction").text(result.typeRestriction);
+                $("#sendIP").text("文书源端IP："+result.sendIP.w+"   ；  电子卷宗源端IP："+result.sendIP.d);
+
+                $("#wsStartTime").text(ws.startDate==null ? '': new Date(ws.startDate).format("yyyy-MM-dd hh:mm:ss"));
+                $("#wsEndTime").text(ws.endDate==null ? '': new Date(ws.endDate).format("yyyy-MM-dd hh:mm:ss"));
+
+                $("#dzjzStartTime").text(dzjz.startDate==null ? '': new Date(dzjz.startDate).format("yyyy-MM-dd hh:mm:ss"));
+                $("#dzjzEndTime").text(dzjz.endDate==null ? '': new Date(dzjz.endDate).format("yyyy-MM-dd hh:mm:ss"));
+
+                $("#wsRunTime").text(ws.runDate==null ? '': new Date(ws.runDate).format("yyyy-MM-dd hh:mm:ss"));
+                $("#dzjzRunTime").text(dzjz.runDate==null ? '': new Date(dzjz.runDate).format("yyyy-MM-dd hh:mm:ss"));
+
+            });
+
+            count++;
+            //去掉定时器的方法
+            if (count == (6*3)) {//3分钟
+                window.clearInterval(t1);
+                alert("实时刷新暂停，可刷新页面再次启用");
+                window.location.reload();
+            }
+        }
+
+        var t1=window.setInterval(getInfo, 1000*10);
+
+
+        $(document).ready(function(){
+            getInfo();
+        });
+
+    </script>
+</head>
+
+<body>
+
+<div>
+    <div style="padding: 10px">
+        <table class="table table-bordered">
+            <tr>
+                <th >文书存放地址</th>
+                <td colspan="2" id="wsPath"></td>
+                <th>电子卷宗存放地址</th>
+                <td colspan="2" id="dzjzPath"></td>
+            </tr>
+
+            <tr>
+                <th>文书是否解密</th>
+                <td id="wsIsDecrypt" colspan="2"></td>
+                <th>电子卷宗是否解密</th>
+                <td id="dzjzIsDecrypt" colspan="2"></td>
+            </tr>
+            <tr>
+                <th>同步单位</th>
+                <td colspan="5" id="dwbm"></td>
+            </tr>
+            <tr>
+                <th>同步类型限制</th>
+                <td colspan="5" id="typeRestriction"></td>
+            </tr>
+            <tr>
+                <th>源端IP</th>
+                <td colspan="5" id="sendIP"></td>
+            </tr>
+            <tr>
+                <th>文书实时同步(关闭/开启)</th>
+                <td colspan="2"  id="wsFileIsSynchronizationNow"></td>
+                <th>电子卷宗实时同步(关闭/开启)</th>
+                <td colspan="2"  id="dzjzFileIsSynchronizationNow"></td>
+            </tr>
+            <tr>
+                <th>文书是否在手动同步中</th>
+                <td colspan="2" id="wsFileIsSynchronization"></td>
+                <th>电子卷宗是否在手动同步中</th>
+                <td colspan="2" id="dzjzFileIsSynchronization"></td>
+            </tr>
+            <tr>
+                <th>文书同步数量</th>
+                <td id="wsTbNum" colspan="2"></td>
+                <th>电子卷宗同步数量</th>
+                <td id="dzjzTbNum" colspan="2"></td>
+            </tr>
+           <tr>
+                <th>文书未找到文件数量</th>
+                <td id="wsNoFileNum" colspan="2"></td>
+                <th>电子卷宗未找到数量</th>
+                <td id="dzjzNoFileNum" colspan="2"></td>
+            </tr>
+            <tr>
+                <th>文书同步起始至(文书创建时间)</th>
+                <td id="wsStartTime" colspan="2"></td>
+                <th>电子卷宗同步起始至(卷宗创建时间)</th>
+                <td id="dzjzStartTime" colspan="2"></td>
+            </tr>
+            <tr>
+                <th>文书初始同步截止(文书创建时间)</th>
+                <td id="wsEndTime" colspan="2"></td>
+                <th>电子卷宗初始同步截止(卷宗创建时间)</th>
+                <td id="dzjzEndTime" colspan="2"></td>
+            </tr>
+            <tr>
+                <th>文书手动任务更新时间</th>
+                <td id="wsRunTime" colspan="2"></td>
+                <th>电子卷宗手动任务更新时间</th>
+                <td id="dzjzRunTime" colspan="2"></td>
+            </tr>
+
+        </table>
+    </div>
+</div>
+</body>
+</html>

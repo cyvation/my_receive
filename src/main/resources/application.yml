@@ -1,0 +1,58 @@
+server:
+  port: 5173
+  max-http-header-size: -1
+  tomcat:
+    max-http-post-size: -1
+  jetty:
+    max-http-post-size: -1
+spring:
+  servlet:
+    multipart:
+      max-file-size: -1
+      max-request-size: -1
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: oracle.jdbc.OracleDriver
+    url: jdbc:oracle:thin:@localhost:1521:orcl   #数据库连接配置
+#    url: jdbc:oracle:thin:@10.45.10.67:1521:tyyw   #数据库连接配置
+    username: tyyw
+    password: tyyw
+    #连接池配置
+    initialSize: 5
+    minIdle: 5
+    maxActive: 20
+    maxWait: 60000
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: SELECT 1 FROM DUAL
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatements: true
+    maxPoolPreparedStatementPerConnectionSize: 20
+    filters: stat,wall,log4j
+    connectionProperties:
+      druid:
+        stat:
+          mergeSql: true
+          slowSqlMillis: 5000
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+mybatis:
+  mapper-locations:
+    - classpath:/mapper/*.xml
+  type-aliases-package: com.tfswx.my_send.entity
+logging:
+  level:
+   com.swx.sjfh.server.mapper : debug
+sendIp:
+  #文书发送端IP
+  wsSendIp: 127.0.0.1
+  #电子卷宗发送端IP
+  dzjzSendIp: 127.0.0.1
+#再次查找次数基数，最大会重复2倍
+findTimes: 5
+startYear: 2015

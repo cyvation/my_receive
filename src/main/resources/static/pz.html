@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>目的端配置</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="jquery-3.3.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="laydate/laydate.js"></script> <!-- 改成你的路径 -->
+    <script>
+
+        function getInfo() {
+            $.get("/myReceive/getInfo", {}, function (result) {
+                var ws = result["ws"];
+                var dzjz = result["dzjz"];
+                $("#wsPath").text(ws.filePathTitle);
+                $("#dzjzPath").text(dzjz.filePathTitle);
+                if (ws.fileIsDecrypt) {
+                    $("#wsIsDecrypt").text("是");
+                    $("#wsIsDecrypt").next().children().val("不解密");
+
+                } else {
+                    $("#wsIsDecrypt").text("否");
+
+                }
+                if (dzjz.fileIsDecrypt) {
+                    $("#dzjzIsDecrypt").text("是");
+                    $("#dzjzIsDecrypt").next().children().val("不解密");
+                } else {
+                    $("#dzjzIsDecrypt").text("否");
+                }
+
+                if (ws.fileIsSynchronization) {
+                    $("#wsFileIsSynchronization").text("是");
+                } else {
+                    $("#wsFileIsSynchronization").text("否");
+
+                }
+                if (dzjz.fileIsSynchronization) {
+                    $("#dzjzFileIsSynchronization").text("是");
+                } else {
+                    $("#dzjzFileIsSynchronization").text("否");
+                }
+
+                // if (ws.fileIsSynchronizationNow) {
+                //     $("#wsFileIsSynchronizationNow").text("是");
+                //     $("#wsFileIsSynchronizationNow").next().children("input").val("关闭");
+                // } else {
+                //     $("#wsFileIsSynchronizationNow").text("否");
+                //     $("#wsFileIsSynchronizationNow").next().children("input").val("开启");
+                //
+                // }
+                // if (dzjz.fileIsSynchronizationNow) {
+                //     $("#dzjzFileIsSynchronizationNow").text("是");
+                //     $("#dzjzFileIsSynchronizationNow").next().children("input").val("关闭");
+                // } else {
+                //     $("#dzjzFileIsSynchronizationNow").text("否");
+                //     $("#dzjzFileIsSynchronizationNow").next().children("input").val("开启");
+                // }
+
+
+                $("#wsNoFileNum").text(ws.noFileNum);
+                $("#dzjzNoFileNum").text(dzjz.noFileNum);
+                $("#wsTbNum").text(ws.fileNum);
+                $("#dzjzTbNum").text(dzjz.fileNum);
+                $("#dwbm").text(result.dwbm);
+                $("#typeRestriction").text(result.typeRestriction);
+                $("#wsSendIP").text(result.sendIP["w"]);
+                $("#dzjzSendIP").text(result.sendIP["d"]);
+                // $("#wsStartTime").text(ws.startDate);
+                // $("#dzjzStartTime").text(dzjz.startDate);
+
+            })
+        }
+        function updateThis(el) {
+            $(el).next().show();
+            $(el).hide();
+            var chageThis = $(el).parent().prev();
+            var myId = chageThis.eq(0)[0].id;
+            var text = chageThis.text();
+            chageThis.empty();
+            switch (myId) {
+                case 'wsPath':
+                   chageThis.append('<input type="text" placeholder="格式：D:\文件名">');
+                    chageThis.children().val(text);
+                    break;
+                case 'dzjzPath':
+                    chageThis.append('<input type="text" placeholder="格式：D:\文件名\">');
+                    chageThis.children().val(text);
+                    break;
+                case 'dwbm':
+                    chageThis.append('<textarea type="text" style="width: 100%" placeholder="格式：510000,510001 或 510000-510001"></textarea>');
+                    chageThis.children().text(text);
+                    break;
+                case 'typeRestriction':
+                    chageThis.append('<textarea type="text" style="width: 100%"  placeholder="格式：0201,0301"></textarea>');
+                    chageThis.children().text(text);
+                    break;
+
+                case 'wsSendIP':
+                    chageThis.append('<input type="text"  placeholder="格式：10.13.10.207">');
+                    chageThis.children().val(text);
+                    break;
+
+                case 'dzjzSendIP':
+                    chageThis.append('<input type="text"  placeholder="格式：10.13.10.207">');
+                    chageThis.children().val(text);
+                    break;
+
+            }
+
+
+        }
+
+
+        function findNoFile(isWs) {
+            $.post("/myReceive/findNoFile", {"isWs": isWs})
+        }
+
+
+        function commitSuccess(el){
+            $(el).hide();
+            $(el).prev().show();
+            var chageThis = $(el).parent().prev();
+            var text = chageThis.children().val();
+            chageThis.empty();
+            chageThis.text(text);
+        }
+        function updateFilePathTitle(isWs,el){
+            var filePathTitle = isWs ? $("#wsPath").children().val() : $("#dzjzPath").children().val();
+            console.log(typeof filePathTitle);
+            $.post("/myReceive/updateFilePathTitle", {"isWs": isWs, "filePathTitle": filePathTitle}, function (result) {
+                if(result.state == 0){
+                    commitSuccess(el);
+                    alert(result.data);
+                }else {
+                    alert(result.message);
+                }
+            })
+
+        }
+
+        function updateFileIsDecrypt(isWs,el){
+
+            $.post("/myReceive/updateFileIsDecrypt", {"isWs": isWs}, function (result) {
+               if(result.state == 0){
+                   if(el.value == '解密'){
+                       el.value = '不解密';
+                       $(el).parent().prev().text('是');
+                   }else {
+                       el.value = '解密';
+                        $(el).parent().prev().text('否');
+                   }
+                   alert(result.data);
+               }else {
+                   alert(result.message);
+               }
+            })
+        }
+
+
+        function updateDwbm(el){
+            $.post("/myReceive/updateDwbm", {"dwbm": $("#dwbm").children().val()}, function (result) {
+               if(result.state == 0){
+                   commitSuccess(el);
+                   alert(result.data);
+               }else {
+                   alert(result.message);
+               }
+            })
+        }
+
+        function updateTypeRestriction(el){
+            $.post("/myReceive/updateTypeRestriction", {"typeRestriction": $("#typeRestriction").children().val()}, function (result) {
+               if(result.state == 0){
+                   commitSuccess(el);
+                   alert(result.data);
+               }else {
+                   alert(result.message);
+               }
+            })
+        }
+
+        function updateSendIP(isWs,el){
+            $.post("/myReceive/updateSendIP", {isWs:isWs,"sendIP": isWs?$("#wsSendIP").children().val():$("#dzjzSendIP").children().val()}, function (result) {
+               if(result.state == 0){
+                   commitSuccess(el);
+                   alert(result.data);
+               }else {
+                   alert(result.message);
+               }
+            })
+        }
+
+        function startFileTb(isWs, el) {
+            var startTime = isWs ? $("#wsStartTime").val() : $("#dzjzStartTime").val();
+            var endTime = isWs ? $("#wsEndTime").val() : $("#dzjzEndTime").val();
+            $.post("/myReceive/startFileSynchronization", {
+                "isWs": isWs,
+                "startTime": startTime,
+                "endTime": endTime
+            }, function (result) {
+                if(result.state == 0){
+                    alert(result.data);
+                }else {
+                    alert(result.message);
+                }
+            })
+        }
+
+        function openReceiveNow(isWs, el) {
+            $.post("/myReceive/updateFileSynchronizationNow", {"isWs": isWs}, function (result) {
+                if(result.state == 0){
+                    if(el.value=='开启'){
+                        $(el).parent().prev().text('是');
+                        el.value='关闭';
+                    }else {
+                        $(el).parent().prev().text('否');
+                        el.value='开启';
+                    }
+                    alert(result.data);
+                }else {
+                    alert(result.message);
+                }
+            })
+
+        }
+        $(function () {
+            laydate.render({
+                elem: '#wsStartTime' //指定元素
+                , type: 'datetime'
+            });
+            laydate.render({
+                elem: '#wsEndTime' //指定元素
+                , type: 'datetime'
+            });
+            laydate.render({
+                elem: '#dzjzStartTime' //指定元素
+                , type: 'datetime'
+            });
+            laydate.render({
+                elem: '#dzjzEndTime' //指定元素
+                , type: 'datetime'
+            });
+            getInfo();
+//            window.setInterval(getInfo, 5000);
+        })
+    </script>
+</head>
+
+<body>
+
+<div>
+    <div style="padding: 10px">
+        <table class="table table-bordered">
+            <tr>
+                <th width="360px">文书存放地址</th>
+                <td id="wsPath"></td>
+                <td>
+                    <input type="button" value="修改" onclick="updateThis(this)">
+                    <input type="button" value="确定" onclick="updateFilePathTitle(true,this)" style="display: none">
+                </td>
+                <th width="360px">电子卷宗存放地址</th>
+                <td id="dzjzPath"></td>
+                <td><input type="button" value="修改" onclick="updateThis(this)">
+                <input type="button" value="确定" onclick="updateFilePathTitle(false,this)" style="display: none">
+                </td>
+            </tr>
+
+            <tr>
+                <th>文书是否解密</th>
+                <td id="wsIsDecrypt"></td>
+                <td><input type="button" value="解密" onclick="updateFileIsDecrypt(true,this)"></td>
+                <th>电子卷宗是否解密</th>
+                <td id="dzjzIsDecrypt"></td>
+                <td><input type="button" value="解密" onclick="updateFileIsDecrypt(false,this)"></td>
+            </tr>
+
+            <tr>
+                <th>同步单位</th>
+                <!--<textarea style="width: 100%"></textarea>-->
+                <td colspan="4" id="dwbm"></td>
+                <td>
+                    <input type="button"  value="修改" onclick="updateThis(this)">
+                <input type="button" value="确定" onclick="updateDwbm(this)" style="display: none">
+                </td>
+            </tr>
+            <tr>
+                <th>同步类型限制</th>
+                <td colspan="4" id="typeRestriction"></td>
+                <td><input type="button"  value="修改" onclick="updateThis(this)">
+                <input type="button" value="确定" onclick="updateTypeRestriction(this)" style="display: none">
+                </td>
+            </tr>
+            <tr>
+                <th>文书请求IP地址</th>
+                <td  id="wsSendIP"></td>
+                <td>
+                    <input type="button" class="myUpdate" value="修改" onclick="updateThis(this)">
+                    <input type="button" value="确定" onclick="updateSendIP(true,this)" style="display: none">
+                </td>
+
+                <th>电子卷宗请求IP地址</th>
+                <td  id="dzjzSendIP"></td>
+                <td>
+                    <input type="button" class="myUpdate" value="修改" onclick="updateThis(this)">
+                    <input type="button" value="确定" onclick="updateSendIP(false,this)" style="display: none">
+                </td>
+
+            </tr>
+            <!--<tr>-->
+                <!--<th>文书实时同步(关闭/开启)</th>-->
+                <!--<td id="wsFileIsSynchronizationNow"></td>-->
+                <!--<td><input type="button" value="开启" onclick="openReceiveNow(true,this)"></td>-->
+                <!--<th>电子卷宗实时同步(关闭/开启)</th>-->
+                <!--<td id="dzjzFileIsSynchronizationNow"></td>-->
+                <!--<td><input type="button" value="开启" onclick="openReceiveNow(false,this)"></td>-->
+            <!--</tr>-->
+            <tr>
+                <th>文书是否在同步</th>
+                <td colspan="2" id="wsFileIsSynchronization"></td>
+                <th>电子卷宗否在同步</th>
+                <td colspan="2" id="dzjzFileIsSynchronization"></td>
+            </tr>
+            <tr>
+                <th>文书同步数量</th>
+                <td id="wsTbNum" colspan="2"></td>
+                <th>电子卷宗同步数量</th>
+                <td id="dzjzTbNum" colspan="2"></td>
+            </tr>
+            <tr>
+                <th>文书未找到文件数量</th>
+                <td id="wsNoFileNum"></td>
+                <td><input type="button" value="再次查找" onclick="findNoFile(true)"></td>
+                <th>电子卷宗未找到数量</th>
+                <td id="dzjzNoFileNum"></td>
+                <td><input type="button" value="再次查找" onclick="findNoFile(false)"></td>
+            </tr>
+
+            <tr>
+                <th>文书初始同步起始时间(文书创建时间)</th>
+                <td colspan="2"><input type="text" id="wsStartTime" placeholder="请选择时间"></td>
+                <th>电子卷宗初始同步起始时间(卷宗创建时间)</th>
+                <td colspan="2"><input type="text" id="dzjzStartTime" placeholder="请选择时间"></td>
+
+            </tr>
+            <tr>
+
+                <th>文书初始同步截止时间(文书创建时间)</th>
+                <td colspan="2"><input type="text" id="wsEndTime" placeholder="请选择时间"></td>
+                <th>电子卷宗初始同步截止时间(卷宗创建时间)</th>
+                <td colspan="2"><input type="text" id="dzjzEndTime" placeholder="请选择时间"></td>
+
+            </tr>
+            <tr>
+                <th>文书开始同步</th>
+                <td colspan="2"><input type="button" value="开启同步" id="startFileTb_ws" onclick="startFileTb(true)"></td>
+                <th>电子卷宗开始同步</th>
+                <td colspan="2"><input type="button" value="开启同步" id="startFileTb_dzjz" onclick="startFileTb(false)">
+                </td>
+            </tr>
+
+
+        </table>
+    </div>
+</div>
+</body>
+</html>

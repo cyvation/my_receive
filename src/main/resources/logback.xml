@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+    <!-- ConsoleAppender 控制台级别日志-->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>
+                <!-- %logger{36} 输出包名+类名-->
+                <!--%M 输出方法名-->
+<!--                %d{yyyy-MM-dd HH:mm:ss} &#45;&#45; %magenta([%thread]) %highlight(%-5level) %logger{36}.%M  %msg%n-->
+                %d{yyyy-MM-dd HH:mm:ss:SSS}%magenta([%thread]) %highlight(%-5level) %logger{6}.%M  %msg%n
+            </pattern>
+        </layout>
+    </appender>
+    <!--RollingFileAppender 文件日志-->
+    <!--根据日志级别分文件存储-->
+    <appender name="INFO_LOGGER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--正在存储的文件名-->
+        <file>logs/receive_info.log</file>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>
+                <!--                %d{yyyy-MM-dd HH:mm:ss.SSS} &#45;&#45; [%thread] %-5level %logger{36}.%M  %msg%n-->
+                %d{yyyy-MM-dd HH:mm:ss.SSS}[%thread].%M %msg%n
+            </pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- rollover daily -->
+            <!--日志的存档名-->
+            <fileNamePattern>logs/receive_info_%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!-- each file should be at most 100MB, keep 60 days worth of history, but at most 20GB -->
+            <maxFileSize>20MB</maxFileSize>
+            <maxHistory>5</maxHistory>
+            <totalSizeCap>100MB</totalSizeCap>
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
+        </rollingPolicy>
+    </appender>
+    <appender name="ERROR_LOGGER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/receive_warn.log</file>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>WARN</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss}[%thread] %-5level %logger{6}.%M  %msg%n
+            </pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- rollover daily -->
+            <fileNamePattern>logs/receive_warn_%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!-- each file should be at most 100MB, keep 60 days worth of history, but at most 20GB -->
+            <maxFileSize>20MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>600MB</totalSizeCap>
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
+        </rollingPolicy>
+    </appender>
+    <!--配置总的日志监听级别-->
+    <root level="info">
+        <appender-ref ref="STDOUT"></appender-ref>
+        <appender-ref ref="INFO_LOGGER"></appender-ref>
+        <appender-ref ref="ERROR_LOGGER"></appender-ref>
+    </root>
+</configuration>
