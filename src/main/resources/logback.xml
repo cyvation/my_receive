@@ -39,12 +39,10 @@
             <cleanHistoryOnStart>true</cleanHistoryOnStart>
         </rollingPolicy>
     </appender>
-    <appender name="ERROR_LOGGER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="WARN_LOGGER" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>logs/receive_warn.log</file>
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>WARN</level>
-            <onMatch>ACCEPT</onMatch>
-            <onMismatch>DENY</onMismatch>
         </filter>
         <encoder>
             <pattern>
@@ -66,6 +64,6 @@
     <root level="info">
         <appender-ref ref="STDOUT"></appender-ref>
         <appender-ref ref="INFO_LOGGER"></appender-ref>
-        <appender-ref ref="ERROR_LOGGER"></appender-ref>
+        <appender-ref ref="WARN_LOGGER"></appender-ref>
     </root>
 </configuration>

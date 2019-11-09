@@ -552,9 +552,9 @@ public class MyReceiveServiceImpl implements MyReceiveService {
 
 
     /**
-     * 实时更新方法，每秒进行数据检测
+     * 实时更新方法，每5秒进行数据检测
      */
-    @Scheduled(cron = "*/1 * * * * ?")
+    @Scheduled(cron = "*/5 * * * * ?")
     public void updateFile() {
         //判断是否可以进行同步和判断是否有文件可以被更新
         if (Parameters.isCanSendNow && fileReceiveMapper.getNewestNum() > 0) {
@@ -620,11 +620,11 @@ public class MyReceiveServiceImpl implements MyReceiveService {
     }
 
     /**
-     * 对未找到文件进行查找（前20次为找的的文件为1小时找一次，针对网络延误过长的文件）
+     * 对未找到文件进行查找（前10次为找的的文件为1小时找一次，针对网络延误过长的文件）
      */
-    @Scheduled(cron = "0 0 1 */1 * ?")  //每天1点执行一次定时任务
+    @Scheduled(cron = "0 30 21 */1 * ?")  //每天21:30执行一次定时任务
     public void writeNoFile20() {
-        //查找20次以内未找到的文件信息
+        //查找10次以内未找到的文件信息
         List<MyFile> fileList = fileReceiveMapper.getNoFileByFindTime(No_Find_Times*2);
         if (fileList.size() == 0) {
             return;
