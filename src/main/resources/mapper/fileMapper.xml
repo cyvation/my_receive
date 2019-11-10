@@ -11,34 +11,52 @@
         <result column="FINDTIME" jdbcType="INTEGER" property="findTime"/>
     </resultMap>
 
-
+    <!--     查询文书文件-->
     <select id="getWsFilePathes" parameterType="map" resultMap="resultMap">
-        select a.filePath,a.zhxgsj,a.cjsj,a.fileType,b.ajlb_bm type from (
-        select wscflj filePath,zhxgsj,cjsj,'w' fileType,bmsah from yx_ws_ajjzwj
-        where cjsj >= #{startDate} and cjsj &lt;= #{endDate}
-        <if test='null != dwbm and ""!=dwbm'>
-            and ${dwbm}
+       SELECT f.wscflj filePath,
+              f.zhxgsj,
+              f.cjsj,
+              'w' fileType,
+              aj.ajlb_bm type
+              --,f.bmsah
+        FROM yx_ws_ajjzwj f
+      INNER JOIN tyyw_gg_ajjbxx aj ON f.bmsah = aj.bmsah AND aj.sfsc = 'N'
+        <if test='null != typeRestriction and ""!=typeRestriction'>
+             AND aj.ajlb_bm IN (${typeRestriction})
         </if>
-        order by cjsj
-        ) a left join tyyw_gg_ajjbxx b on a.bmsah = b.bmsah
-        <if test="typeRestriction!=''">
-            where b.ajlb_bm in (${typeRestriction})
+        <if test='null != ajdwbm and ""!=ajdwbm'>
+            AND ${ajdwbm}
         </if>
-
+       WHERE f.sfsc='N'
+       <if test='null != fdwbm and ""!=fdwbm'>
+            AND ${fdwbm}
+       </if>
+            AND f.cjsj >= #{startDate} AND f.cjsj &lt;= #{endDate}
+       ORDER BY f.cjsj
     </select>
 
+    <!--    查询卷宗文件-->
     <select id="getDzjzFilePathes" parameterType="map" resultMap="resultMap">
-        select a.filePath,a.zhxgsj,a.cjsj,a.fileType,b.ajlb_bm type from (
-        select wjlj||'\'||wjmc||wjhz||'.encry' filePath,zhxgsj,cjsj,'d' fileType,bmsah from yx_dzjz_jzmlwj
-        where cjsj >= #{startDate} and cjsj &lt;= #{endDate}
-        <if test='null != dwbm and ""!=dwbm'>
-            and ${dwbm}
-        </if>
-        order by cjsj
-        ) a left join tyyw_gg_ajjbxx b on a.bmsah = b.bmsah
+        SELECT f.wjlj || '\' || f.wjmc || f.wjhz || '.encry' filePath,
+               f.zhxgsj,
+               f.cjsj,
+               'd' fileType,
+               aj.ajlb_bm type
+               --,f.bmsah
+        FROM yx_dzjz_jzmlwj f
+       INNER JOIN tyyw_gg_ajjbxx aj ON f.bmsah = aj.bmsah AND aj.sfsc = 'N'
         <if test='null != typeRestriction and ""!=typeRestriction'>
-            where b.ajlb_bm in (${typeRestriction})
+            AND aj.ajlb_bm IN (${typeRestriction})
         </if>
+        <if test='null != ajdwbm and ""!=ajdwbm'>
+            AND ${ajdwbm}
+        </if>
+        WHERE f.sfsc = 'N'
+        <if test='null != fdwbm and ""!=fdwbm'>
+             AND ${fdwbm}
+        </if>
+             AND f.cjsj >= #{startDate} AND f.cjsj &lt;= #{endDate}
+        ORDER BY f.cjsj
     </select>
 
 
