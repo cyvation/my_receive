@@ -717,7 +717,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
             fileReceiveMapper.deleteNoFileById(myFile.getId());
             new Thread(new WriteFile(myFileInfo.getFileIsDecrypt(), myFileInfo.getFilePathTitle() + myFile.getFilePath(), fileByte)).start();
         } else {
-            log.info(myFile.getFileType() + " 不存在 [" + DateUtil.getStr4Date(myFile.getCjsj()) + "] " + myFile.getFilePath());
+            log.info(myFile.getFileType() + " 未找到 [" + DateUtil.getStr4Date(myFile.getCjsj()) + "] " + myFile.getFilePath());
         }
     }
 
@@ -736,7 +736,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
             new Thread(new WriteFile(myFileInfo.getFileIsDecrypt(), myFileInfo.getFilePathTitle() + myFile.getFilePath(), fileByte)).start();
             fileReceiveMapper.deleteNoFileById(myFile.getId());
         } else {
-            log.info(myFile.getFileType() + " 不存在 [" + DateUtil.getStr4Date(myFile.getCjsj()) + "] " + myFile.getFilePath());
+            log.info(myFile.getFileType() + " 未找到 [" + DateUtil.getStr4Date(myFile.getCjsj()) + "] " + myFile.getFilePath());
             myFile.setFindTime(myFile.getFindTime() + 1);
             fileReceiveMapper.updateNoFileById(myFile);
         }
@@ -756,7 +756,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
             log.info(myFile.getFileType() + " 已下载 [" + DateUtil.getStr4Date(myFile.getCjsj()) + "] " + myFile.getFilePath());
             new Thread(new WriteFile(myFileInfo.getFileIsDecrypt(), myFileInfo.getFilePathTitle() + myFile.getFilePath(), fileByte)).start();
         } else {
-            log.info(myFile.getFileType() + " 不存在 [" + DateUtil.getStr4Date(myFile.getCjsj()) + "] " + myFile.getFilePath());
+            log.info(myFile.getFileType() + " 未找到 [" + DateUtil.getStr4Date(myFile.getCjsj()) + "] " + myFile.getFilePath());
             writeFile(myFileInfo.getNoFilePath(), "文件名：" + myFile.getFilePath());
             fileReceiveMapper.insertNoFile(myFile);
         }

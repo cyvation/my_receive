@@ -1,11 +1,14 @@
  application.yml文件里
-    url: jdbc:oracle:thin:@10.45.10.67:1521:tyyw
+    #沧州
+    url: jdbc:oracle:thin:@141.20.197.37:1521:sjfh
+    #邢台
+    url: jdbc:oracle:thin:@141.18.128.37:1521:tyyw
     username: tyyw
     password: tyyw
 
 sendIp:
-  wsSendIp: 127.0.0.1
-  dzjzSendIp: 127.0.0.1
+  wsSendIp: 10.13.10.207
+  dzjzSendIp: 10.13.10.207
 
 jar文件版本和运行路径
 
