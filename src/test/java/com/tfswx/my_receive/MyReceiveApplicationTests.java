@@ -8,6 +8,7 @@ import com.tfswx.my_receive.utils.FileUtil;
 import com.tfswx.my_receive.utils.Parameters;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,14 +91,8 @@ public class MyReceiveApplicationTests {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
+            IOUtils.closeQuietly(fos);
             }
-        }
     }
     /**
      * 生成文件测试内容
