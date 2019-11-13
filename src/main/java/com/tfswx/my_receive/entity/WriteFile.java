@@ -2,6 +2,8 @@ package com.tfswx.my_receive.entity;
 
 import com.tfswx.my_receive.utils.DataEncryption;
 import com.tfswx.my_receive.utils.FileUtil;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
+import sun.nio.ch.IOUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -60,13 +62,7 @@ public class WriteFile implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            }
+            IOUtils.closeQuietly(fos);
         }
     }
 

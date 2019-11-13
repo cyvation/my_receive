@@ -27,7 +27,7 @@
         <if test='null != ajdwbm and ""!=ajdwbm'>
             AND ${ajdwbm}
         </if>
-       WHERE f.sfsc='N'
+       WHERE f.sfsc &lt;> 'Y'
        <if test='null != fdwbm and ""!=fdwbm'>
             AND ${fdwbm}
        </if>
@@ -80,9 +80,9 @@
         UPDATE SJFH_FILE_NOFILE SET FINDTIME = #{findTime} WHERE ID = #{id}
     </insert>
 
-    <select id="getNoFileNumByFindTime" resultType="java.lang.Integer" parameterType="java.lang.Integer">
+   <!-- <select id="getNoFileNumByFindTime" resultType="java.lang.Integer" parameterType="java.lang.Integer">
         select COUNT(1) from SJFH_FILE_NOFILE WHERE FINDTIME &lt;= #{findTime}
-    </select>
+    </select>-->
 
     <select id="getNoFileByFindTime" resultMap="resultMap" parameterType="java.lang.Integer">
         select id,filePath,type,fileType,zhxgsj,cjsj,findTime from SJFH_FILE_NOFILE WHERE FINDTIME &lt;= #{findTime}
@@ -92,9 +92,9 @@
         delete from SJFH_FILE_NOFILE where id = #{id}
     </delete>
 
-    <delete id="deleteNewestByFileType" parameterType="java.lang.String">
+    <!--<delete id="deleteNewestByFileType" parameterType="java.lang.String">
         delete from SJFH_FILE_NOFILE where fileType = #{fileType}
-    </delete>
+    </delete>-->
 
 
     <select id="findTables" resultType="java.lang.Integer">

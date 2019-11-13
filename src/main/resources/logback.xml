@@ -7,7 +7,7 @@
                 <!-- %logger{36} 输出包名+类名-->
                 <!--%M 输出方法名-->
 <!--                %d{yyyy-MM-dd HH:mm:ss} &#45;&#45; %magenta([%thread]) %highlight(%-5level) %logger{36}.%M  %msg%n-->
-                %d{yyyy-MM-dd HH:mm:ss:SSS}%magenta([%thread]) %highlight(%-5level) %logger{6}.%M  %msg%n
+                %d{yyyy-MM-dd HH:mm:ss:SSS}%magenta([%thread]) %highlight(%-5level) %M  %msg%n
             </pattern>
         </layout>
     </appender>
@@ -24,7 +24,7 @@
         <encoder>
             <pattern>
                 <!--                %d{yyyy-MM-dd HH:mm:ss.SSS} &#45;&#45; [%thread] %-5level %logger{36}.%M  %msg%n-->
-                %d{yyyy-MM-dd HH:mm:ss.SSS}[%thread].%M %msg%n
+                %d{yyyy-MM-dd HH:mm:ss.SSS}[%thread].%logger{6}.%M %msg%n
             </pattern>
             <charset>UTF-8</charset>
         </encoder>

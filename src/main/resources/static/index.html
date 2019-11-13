@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>目的端信息查看</title>
+    <title>信息查看</title>
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <script src="jquery-3.3.1.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
@@ -65,6 +65,12 @@
                 } else {
                     $("#dzjzFileIsSynchronization").text("否");
                 }
+                //是否监测新文件实时更新
+                if (result.isMyCanSendNow) {
+                    $("#isMyCanSendNow").text("是");
+                } else {
+                    $("#isMyCanSendNow").text("否");
+                }
 
                 if (ws.fileIsSynchronizationNow) {
                     $("#wsFileIsSynchronizationNow").text("已开启");
@@ -122,9 +128,9 @@
     <div style="padding: 10px">
         <table class="table table-bordered">
             <tr>
-                <th >文书存放地址</th>
-                <td colspan="2" id="wsPath"></td>
-                <th>电子卷宗存放地址</th>
+                <th width="360px">文书存放地址</th>
+                <td width="27%" colspan="2" id="wsPath"></td>
+                <th width="360px">电子卷宗存放地址</th>
                 <td colspan="2" id="dzjzPath"></td>
             </tr>
 
@@ -149,7 +155,10 @@
                 <th>电子卷宗源端IP</th>
                 <td id="dzjzSendIP" colspan="2"></td>
             </tr>
-
+            <tr>
+                <th>是否监听新文件更新</th>
+                <td colspan="5"id="isMyCanSendNow" ></td>
+            </tr>
             <tr>
                 <th>文书实时同步(关闭/开启)</th>
                 <td colspan="2"  id="wsFileIsSynchronizationNow"></td>

@@ -113,7 +113,7 @@ public class MyReceiveController {
     @RequestMapping("/findNoFile")
     public void findNoFile() {
         log.info("查找所有未找到的文件，有就进行同步");
-        myReceiveService.findNoFile();
+        myReceiveService.findNoFile99();
     }
 
     /**
@@ -138,5 +138,16 @@ public class MyReceiveController {
         return "可以进行一次解密命令";
     }
 
+
+    /**
+     * 是否【能】进行实时同步
+     * @param isMyCanSendNow
+     */
+    @RequestMapping("/isMyCanSendNow")
+    @ResponseBody
+    public JsonResult isMyCanSendNow(Boolean isMyCanSendNow) {
+        log.warn("修改是否【能】进行实时同步状态"+isMyCanSendNow);
+        return myReceiveService.isMyCanSendNow(isMyCanSendNow);
+    }
 
 }

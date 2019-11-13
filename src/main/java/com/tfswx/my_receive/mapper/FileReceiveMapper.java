@@ -66,7 +66,7 @@ public interface FileReceiveMapper {
      * @return
      */
 
-    int getNoFileNumByFindTime(int findTime);
+//    int getNoFileNumByFindTime(int findTime);
     /**
      * 通过【findTime】没找到的次数获取没有找到的文件，小于
      * @param findTime
@@ -85,7 +85,7 @@ public interface FileReceiveMapper {
      * @param fileType
      * @return
      */
-    void deleteNewestByFileType(String fileType);
+//    void deleteNewestByFileType(String fileType);
 
 
     /**

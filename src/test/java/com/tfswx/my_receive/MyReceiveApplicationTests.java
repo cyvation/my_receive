@@ -15,8 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,19 +41,20 @@ public class MyReceiveApplicationTests {
 //        map.put("typeRestriction", "0301,0201");
 //        map.put("fdwbm", getDwbmSql("f.dwbm","500101,500102,500103"));
 //        map.put("ajdwbm", getDwbmSql("aj.cbdw_bm","500101-500103"));
-        map.put("startDate", DateUtil.getDate4Str("2014-03-26"));
+        map.put("startDate", DateUtil.getDate4Str("2015-03-26"));
         map.put("endDate", DateUtil.getDate4Str("2016-01-05"));
         List<MyFile> fileList = mapper.getWsFilePathes(map);
         System.out.println("文书数量：" + fileList.size());
 
-        int i=0;
+        int i = 0;
         for (MyFile myFile : fileList) {
-            byte[] fileBytes = getRandombyte("文书测试内容" + myFile.getFilePath(),21);
+            String fileBytes = getRandombyte("文书测试内容" + myFile.getFilePath(), 21);
             createFile("F:\\doc\\" + myFile.getFilePath(), fileBytes);
             i++;
-            System.out.println(i+ "   F:\\doc\\" + myFile.getFilePath() + "  大小(K):" + (fileBytes.length /1024));
+            System.out.println(i + "   F:\\doc\\" + myFile.getFilePath() + "  大小(K):" + (fileBytes.length() / 1024));
         }
     }
+
     @Test //创建卷宗测试文件 67639
     public void createDzjzFiles() {
         System.out.println("test卷宗源端IP：" + Parameters.sendIPMap.get("d"));
@@ -62,48 +65,54 @@ public class MyReceiveApplicationTests {
 //        map.put("typeRestriction", "0301,0201");
 //        map.put("fdwbm", getDwbmSql("f.dwbm","500000,500102,501103"));
 //        map.put("ajdwbm", getDwbmSql("aj.cbdw_bm","500000-511103"));
-        map.put("startDate", DateUtil.getDate4Str("2015-12-25"));
-        map.put("endDate", DateUtil.getDate4Str("2017-08-11"));
+        map.put("startDate", DateUtil.getDate4Str("2013-12-24"));
+        map.put("endDate", DateUtil.getDate4Str("2019-08-11"));
         List<MyFile> fileList = mapper.getDzjzFilePathes(map);
         System.out.println("卷宗数量：" + fileList.size());
 
-        int i=0;
+        int i = 0;
         for (MyFile myFile : fileList) {
-            byte[] fileBytes = getRandombyte("卷宗测试内容" + myFile.getFilePath(),31);
+            String fileBytes = getRandombyte("卷宗测试内容" + myFile.getFilePath(), 31);
             createFile("F:\\JdNewData\\" + myFile.getFilePath(), fileBytes);
             i++;
-            System.out.println(i+ "   F:\\JdNewData\\" + myFile.getFilePath() + "  大小(字节):" + fileBytes.length);
+            System.out.println(i + "   F:\\JdNewData\\" + myFile.getFilePath() + "  大小(K):" + (fileBytes.length() / 1024));
         }
     }
 
     /**
      * 文件写入本地
+     *
      * @param filePath
      * @param fileBytes
      */
-    private void createFile(String filePath, byte[] fileBytes){
-        FileOutputStream fos = null;
+    private void createFile(String filePath, String fileBytes) {
+        FileOutputStream outSTr = null;
+        BufferedOutputStream buff = null;
         File file = FileUtil.createFile(filePath);
         try {
-            fos = new FileOutputStream(file);
-            fos.write(fileBytes);
-//            fos.flush();
-        } catch (Exception e) {
+            outSTr = new FileOutputStream(file);
+            buff = new BufferedOutputStream(outSTr);
+            buff.write(fileBytes.getBytes());
+            buff.flush();
+            buff.close();
+        } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            IOUtils.closeQuietly(fos);
-            }
+            IOUtils.closeQuietly(buff);
+            IOUtils.closeQuietly(outSTr);
+        }
     }
+
     /**
      * 生成文件测试内容
      *
      * @param t
      * @return
      */
-    private byte[] getRandombyte(String t,int size) {
+    private String getRandombyte(String t, int size) {
         Random random = new Random();
         String s = RandomStringUtils.randomAlphanumeric(random.nextInt(100) * size);
-        return (t + s).getBytes();
+        return (t + s);
     }
 
 
@@ -124,6 +133,7 @@ public class MyReceiveApplicationTests {
             return " " + fied + " = " + dwbm + " ";
         }
     }
+
     //    @Test
     public void contextLoads() {
         System.out.println("testing...");

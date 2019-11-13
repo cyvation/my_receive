@@ -76,7 +76,7 @@ public interface MyReceiveService {
     /**
      * 查找所有未找到的文件，有就进行同步
      */
-    void findNoFile();
+    void findNoFile99();
 
     /**
      * 查找所有未找到的文件，有就进行同步
@@ -105,4 +105,10 @@ public interface MyReceiveService {
      * 查找所有未找到的文件，有就进行同步
      */
     void createDzjzTrigger();
+
+    /**
+     * 是否【能】进行实时同步
+     * @param isMyCanSendNow
+     */
+    JsonResult isMyCanSendNow(Boolean isMyCanSendNow);
 }

@@ -20,6 +20,7 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,10 +33,7 @@ import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +41,6 @@ import java.util.Map;
 
 import static com.tfswx.my_receive.utils.DateUtil.getStr4Date;
 import static com.tfswx.my_receive.utils.Parameters.No_Find_Times;
-import static org.apache.http.HttpHeaders.USER_AGENT;
 
 @Service
 @Transactional
@@ -57,7 +54,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
     FileReceiveMapper fileReceiveMapper;
 
     //写日志的类
-    static FileWriter fw;
+//    static FileWriter fw;
 
 
     /**
@@ -103,9 +100,9 @@ public class MyReceiveServiceImpl implements MyReceiveService {
      * @param filePath
      * @param str
      */
-    public void writeFile(String filePath, String str) {
+/*    public void writeFile(String filePath, String str) {
         try {
-            fw = new FileWriter(filePath, true);
+            fw = new FileWriter(filePath, true);//true 追加写入
             fw.write(str + "\r\n\r\n");
             fw.flush();
         } catch (IOException e) {
@@ -118,9 +115,23 @@ public class MyReceiveServiceImpl implements MyReceiveService {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+         }
+        }*/
+    public void writeFile(String filePath, String str) {
+        FileOutputStream outSTr = null;
+        BufferedOutputStream buff = null;
+        try {
+            outSTr = new FileOutputStream(new File(filePath), true);//追加写入
+            buff = new BufferedOutputStream(outSTr);
+            buff.write((str + "\r\n\r\n").getBytes());
+            buff.flush();
+            buff.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            IOUtils.closeQuietly(buff);
+            IOUtils.closeQuietly(outSTr);
         }
-
-
     }
 
     @Override
@@ -282,7 +293,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
                 return new JsonResult(JsonResult.ERROR, "请先配置文书请求IP地址");
             }
 
-            openFileIsSynchronizationNow();
+            isMyCanSendNow(true);
 
             //记录操作信息
             String msg = "收到文书同步请求:开始时间：" + startTime + "结束时间：" + endTime;
@@ -301,7 +312,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
             if ("".equals(Parameters.sendIPMap.get("d"))) {
                 return new JsonResult(JsonResult.ERROR, "请先配置电子卷宗请求IP地址");
             }
-            openFileIsSynchronizationNow();
+            isMyCanSendNow(true);
             String msg = "收到电子卷宗同步请求:startTime：" + startTime + "endTime：" + endTime;
             writeFile(Parameters.dzjzFileInfo.getLogFilePath(), msg);
             log.info(msg);
@@ -314,12 +325,18 @@ public class MyReceiveServiceImpl implements MyReceiveService {
         return new JsonResult("同步完成");
     }
 
-
-    public void openFileIsSynchronizationNow() {
-        Parameters.isMyCanSendNow = true;
-        Parameters.propertiesUtil.setProperty("isMyCanSendNow", "true");
-        Parameters.isCanSendNow = true;
-
+    /**
+     * 是否【能】进行实时同步
+     * @param isMyCanSendNow
+     */
+    public JsonResult isMyCanSendNow(Boolean isMyCanSendNow) {
+        if(isMyCanSendNow==null){
+            isMyCanSendNow=true;
+        }
+        Parameters.isMyCanSendNow = isMyCanSendNow;
+        Parameters.propertiesUtil.setProperty("isMyCanSendNow", String.valueOf(isMyCanSendNow));
+        Parameters.isCanSendNow = isMyCanSendNow;
+        return new JsonResult("修改成功");
     }
 
     @Override
@@ -460,9 +477,10 @@ public class MyReceiveServiceImpl implements MyReceiveService {
                     //当检测到15分钟没有运行，则再次启动同步
                     if (myFileInfo.getFileIsSynchronization() && (new Date().getTime() - myFileInfo.getRunDate().getTime()) > 900000) {
                         //记录故障发生
-                        writeFile(myFileInfo.getLogFilePath(),
-                                "发生故障时间：" + getStr4Date(new Date()) + "\r\n" +
-                                        "系统发生故障，采用定时器重启。。。。。。。。");
+                        String gzMsg="发生故障时间：" + getStr4Date(new Date()) + "\r\n" +
+                                "系统发生故障，采用定时器重启。。。。。。。。";
+                        writeFile(myFileInfo.getLogFilePath(),gzMsg );
+                        log.error(gzMsg);
                         startFileSynchronization(myFileInfo);
                     }
                 }
@@ -520,13 +538,15 @@ public class MyReceiveServiceImpl implements MyReceiveService {
         //文件同步配置信息
         map.put("ws", Parameters.wsFileInfo);
         map.put("dzjz", Parameters.dzjzFileInfo);
+        //是否【能】进行实时同步
+        map.put("isMyCanSendNow", Parameters.isMyCanSendNow);
         return map;
     }
 
 
     @Override
-    public void findNoFile() {
-        writeNoFile(99);
+    public void findNoFile99() {
+        writeNoFileByTimes(99);
     }
 
     @Override
@@ -561,12 +581,14 @@ public class MyReceiveServiceImpl implements MyReceiveService {
 
 
     /**
-     * 实时更新方法，每5秒进行数据检测
+     * 实时更新方法，每3分进行数据检测
      */
-    @Scheduled(cron = "*/5 * * * * ?")
-    public void updateFile() {
+//    @Scheduled(cron = "17 */3 * * * ?")
+    @Scheduled(fixedDelay=1000*60*3,initialDelay = 51000)
+    public void checkNews() {
         //判断是否可以进行同步和判断是否有文件可以被更新
         if (Parameters.isCanSendNow && fileReceiveMapper.getNewestNum() > 0) {
+            log.info("执行文件更新实时检测任务");
             //设置是否可以进行同步为否
             Parameters.isCanSendNow = false;
             //记录运行时间，用于检测该方法是否正常运行
@@ -580,7 +602,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
 //            }
             //获取需要同步的文件
             List<MyFile> fileList = fileReceiveMapper.getNewest();
-            log.info("发现新文件数量：" + fileList.size());
+            log.info("检测发现新文件数量：" + fileList.size());
             //遍历文件并写入
             for (MyFile myFile : fileList) {
                 switch (myFile.getFileType()) {
@@ -594,7 +616,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
                 }
                 fileReceiveMapper.deleteNewestById(myFile.getId());
             }
-            log.info("--------------新文件更新结束-------------");
+            log.info("--------------检测发现的新文件更新结束-------------");
             //设置是否可以进行同步为是
             Parameters.isCanSendNow = true;
         }
@@ -603,8 +625,8 @@ public class MyReceiveServiceImpl implements MyReceiveService {
     /**
      * 对未找到文件进行查找（前10次为找的的文件为5分钟找一次，预防文件传输延迟造成的错误）
      */
-    @Scheduled(cron = "0 */5 * * * ?")  //每隔5分钟执行一次定时任务
-    public void writeNoFile() {
+    @Scheduled(cron = "59 */29 * * * ?")  //每隔29分钟执行一次定时任务
+    public void keepUpNews() {
         //查找10次以内未找到的文件信息
         List<MyFile> fileList = fileReceiveMapper.getNoFileByFindTime(No_Find_Times);
         if (fileList.size() == 0) {
@@ -629,10 +651,10 @@ public class MyReceiveServiceImpl implements MyReceiveService {
     }
 
     /**
-     * 对未找到文件进行查找（前10次为找的的文件为1小时找一次，针对网络延误过长的文件）
+     * 对未找到文件进行查找（前20次为找的的文件为1小时找一次，针对网络延误过长的文件）
      */
     @Scheduled(cron = "0 30 21 */1 * ?")  //每天21:30执行一次定时任务
-    public void writeNoFile20() {
+    public void writeNoFileDuplation () {
         //查找10次以内未找到的文件信息
         List<MyFile> fileList = fileReceiveMapper.getNoFileByFindTime(No_Find_Times * 2);
         if (fileList.size() == 0) {
@@ -661,7 +683,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
      *
      * @param findTime 未找到次数
      */
-    public void writeNoFile(Integer findTime) {
+    public void writeNoFileByTimes(Integer findTime) {
         List<MyFile> fileList = fileReceiveMapper.getNoFileByFindTime(findTime);
         log.info("未找到的文件数量为：" + fileList.size());
         if (fileList.size() == 0) {
@@ -687,8 +709,8 @@ public class MyReceiveServiceImpl implements MyReceiveService {
     /**
      * 检测实时更新是否停止，若停止，则将是否可以进行同步打开（目前机制不完善，有很多错误未测试）
      */
-    @Scheduled(cron = "0 0 */2 * * ?")  //每隔2小时执行一次定时任务
-    public void newestIsError() {
+    @Scheduled(cron = "2 2 */2 * * ?")  //每隔2小时执行一次定时任务
+    public void keepUpIsError() {
         if (Parameters.isMyCanSendNow && !Parameters.isCanSendNow && (new Date().getTime() - Parameters.runDate.getTime()) > 360000) {
             Parameters.isCanSendNow = true;
         }
@@ -764,10 +786,9 @@ public class MyReceiveServiceImpl implements MyReceiveService {
 
     //通过httpclient传输文件信息类myFile中的文件名称和文件种类，获取文件byte[]，返回内容不为null，无文件则返回的new byte[0]
     public byte[] getFileByRequset(MyFile myFile) {
-        //log.info(myFile.getFileType()+" ["+DateUtil.getStr4Date(myFile.getCjsj())+"] "+myFile.getFilePath());
         CloseableHttpClient httpclient = HttpClients.createDefault();
         RequestConfig requestConfig = RequestConfig.custom()
-                .setSocketTimeout(60000) //指客户端从服务器读取数据的毫秒timeout
+                .setSocketTimeout(30000) //指客户端从服务器读取数据的毫秒timeout
                 .setConnectTimeout(5000) //指客户端和服务器建立连接的timeout
                 .setConnectionRequestTimeout(5000) //指从连接池获取连接的timeout
                 .build();

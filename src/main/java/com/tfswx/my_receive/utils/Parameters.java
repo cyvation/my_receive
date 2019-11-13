@@ -19,7 +19,7 @@ public class Parameters {
     //卷宗信息管理类
     public static MyFileInfo dzjzFileInfo = null;
 
-    //是否开启能开启实时同步
+    //是否能开启实时同步
     public static Boolean isMyCanSendNow = false;
 
     //是否能进行实时同步
