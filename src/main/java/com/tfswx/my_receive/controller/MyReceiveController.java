@@ -150,4 +150,15 @@ public class MyReceiveController {
         return myReceiveService.isMyCanSendNow(isMyCanSendNow);
     }
 
+    /**
+     * 扫描已经下载的文件，并生成sql脚本文件
+     * @param fileType w：文书 d:电子卷宗
+     */
+    @RequestMapping("/scanDownloadedFiles")
+    @ResponseBody
+    public JsonResult scanDownloadedFiles(String fileType) {
+        log.warn("收到页面请求：扫描已下载文件，"+fileType);
+        return myReceiveService.scanDownloadedFiles(fileType);
+    }
+
 }

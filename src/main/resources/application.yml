@@ -1,5 +1,5 @@
 server:
-  port: 5173
+  port: 9528
   max-http-header-size: -1
   tomcat:
     max-http-post-size: -1

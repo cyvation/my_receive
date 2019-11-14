@@ -111,4 +111,9 @@ public interface MyReceiveService {
      * @param isMyCanSendNow
      */
     JsonResult isMyCanSendNow(Boolean isMyCanSendNow);
+    /**
+     * 扫描已经下载的文件，并生成sql脚本文件
+     * @param fileType
+     */
+    JsonResult scanDownloadedFiles(String fileType);
 }

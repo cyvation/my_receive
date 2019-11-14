@@ -5,10 +5,7 @@ import com.tfswx.my_receive.entity.MyFileInfo;
 import com.tfswx.my_receive.entity.WriteFile;
 import com.tfswx.my_receive.init.FileInfoInit;
 import com.tfswx.my_receive.mapper.FileReceiveMapper;
-import com.tfswx.my_receive.utils.DateUtil;
-import com.tfswx.my_receive.utils.FileUtil;
-import com.tfswx.my_receive.utils.JsonResult;
-import com.tfswx.my_receive.utils.Parameters;
+import com.tfswx.my_receive.utils.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -40,7 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.tfswx.my_receive.utils.DateUtil.getStr4Date;
-import static com.tfswx.my_receive.utils.Parameters.No_Find_Times;
+import static com.tfswx.my_receive.utils.Parameters.*;
 
 @Service
 @Transactional
@@ -72,6 +69,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
         String wsLogFilePath = Parameters.rootPath + "SJFH2\\ws\\log\\log_" + dateTime + ".txt";
         //存放未找到文书的地址
         String wsNoFilePath = Parameters.rootPath + "SJFH2\\ws\\nofile\\nofile_" + dateTime + ".txt";
+
         //创建文件
         FileUtil.createFile(wsLogFilePath);
         FileUtil.createFile(wsNoFilePath);
@@ -327,16 +325,47 @@ public class MyReceiveServiceImpl implements MyReceiveService {
 
     /**
      * 是否【能】进行实时同步
+     *
      * @param isMyCanSendNow
      */
     public JsonResult isMyCanSendNow(Boolean isMyCanSendNow) {
-        if(isMyCanSendNow==null){
-            isMyCanSendNow=true;
+        if (isMyCanSendNow == null) {
+            isMyCanSendNow = true;
         }
         Parameters.isMyCanSendNow = isMyCanSendNow;
         Parameters.propertiesUtil.setProperty("isMyCanSendNow", String.valueOf(isMyCanSendNow));
         Parameters.isCanSendNow = isMyCanSendNow;
         return new JsonResult("修改成功");
+    }
+
+    @Override
+    public JsonResult scanDownloadedFiles(String fileType) {
+        String msg = "文书";
+        if (dzjzType.equals(fileType)) {
+            msg = "电子卷宗";
+        }
+        try {
+            long currentTimeMillis = System.currentTimeMillis();
+            long count = -1;
+            if (wsType.equals(fileType)) {
+                //存放已下载文书扫描sql文件
+                String wsSaveSQLPath = Parameters.rootPath + "SJFH2\\ws\\download\\";
+
+                count = new ScanFiles(fileType,Parameters.wsFileInfo.getFilePathTitle(), wsSaveSQLPath).scanFilesWithNoRecursion();
+            } else if (dzjzType.equals(fileType)) {
+                //存放已下载电子卷宗扫描sql文件
+                String dzjzSaveSQLPath = Parameters.rootPath + "SJFH2\\dzjz\\download\\";
+                count = new ScanFiles(fileType,Parameters.dzjzFileInfo.getFilePathTitle(), dzjzSaveSQLPath).scanFilesWithNoRecursion();
+            }
+            log.warn(msg + "已下载文件总数：" + count);
+            long currentTimeMillis2 = System.currentTimeMillis();
+            System.out.println("耗时(分)：" + (currentTimeMillis2 - currentTimeMillis) / 60000);
+            return new JsonResult(msg + "已下载文件扫描完成，总数：" + count + " ，耗时(分)：" + (currentTimeMillis2 - currentTimeMillis) / 60000);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error(e.getMessage());
+            return new JsonResult(msg + "扫描失败" + e.getMessage());
+        }
     }
 
     @Override
@@ -477,9 +506,9 @@ public class MyReceiveServiceImpl implements MyReceiveService {
                     //当检测到15分钟没有运行，则再次启动同步
                     if (myFileInfo.getFileIsSynchronization() && (new Date().getTime() - myFileInfo.getRunDate().getTime()) > 900000) {
                         //记录故障发生
-                        String gzMsg="发生故障时间：" + getStr4Date(new Date()) + "\r\n" +
+                        String gzMsg = "发生故障时间：" + getStr4Date(new Date()) + "\r\n" +
                                 "系统发生故障，采用定时器重启。。。。。。。。";
-                        writeFile(myFileInfo.getLogFilePath(),gzMsg );
+                        writeFile(myFileInfo.getLogFilePath(), gzMsg);
                         log.error(gzMsg);
                         startFileSynchronization(myFileInfo);
                     }
@@ -584,7 +613,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
      * 实时更新方法，每3分进行数据检测
      */
 //    @Scheduled(cron = "17 */3 * * * ?")
-    @Scheduled(fixedDelay=1000*60*3,initialDelay = 51000)
+    @Scheduled(fixedDelay = 1000 * 60 * 3, initialDelay = 51000)
     public void checkNews() {
         //判断是否可以进行同步和判断是否有文件可以被更新
         if (Parameters.isCanSendNow && fileReceiveMapper.getNewestNum() > 0) {
@@ -654,7 +683,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
      * 对未找到文件进行查找（前20次为找的的文件为1小时找一次，针对网络延误过长的文件）
      */
     @Scheduled(cron = "0 30 21 */1 * ?")  //每天21:30执行一次定时任务
-    public void writeNoFileDuplation () {
+    public void writeNoFileDuplation() {
         //查找10次以内未找到的文件信息
         List<MyFile> fileList = fileReceiveMapper.getNoFileByFindTime(No_Find_Times * 2);
         if (fileList.size() == 0) {

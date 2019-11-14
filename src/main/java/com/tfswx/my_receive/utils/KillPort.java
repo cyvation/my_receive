@@ -37,7 +37,7 @@ public class KillPort {
             InputStream inputStream = p.getInputStream();
             List<String> read = read(inputStream, "UTF-8");
             if (read.size() == 0) {
-                System.out.println(port + "端口可用，准备启动程序");
+                System.out.println("端口可用，准备启动程序");
                 try {
                     TimeUnit.SECONDS.sleep(1);
 
@@ -48,7 +48,7 @@ public class KillPort {
                 for (String string : read) {
                     System.out.println(string);
                 }
-                System.out.println(port + "端口找到" + read.size() + "个进程，正在准备清理");
+                System.out.println("端口找到" + read.size() + "个进程，正在准备清理");
                 kill(read);
                 System.out.println(port + "端口已可用，继续启动程序...");
             }

@@ -31,6 +31,13 @@ public class MyReceiveApplicationTests {
     @Autowired
     FileReceiveMapper mapper;
 
+    /**
+     * 扫描本地已下载的电子卷宗
+     */
+    public void scanLocalDzjzFiles(){
+
+    }
+
     @Test //创建文书测试文件
     public void createWsFiles() {
         System.out.println("test文书源端IP：" + Parameters.sendIPMap.get("w"));
