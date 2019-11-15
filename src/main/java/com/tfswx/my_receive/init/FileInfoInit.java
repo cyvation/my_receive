@@ -48,11 +48,15 @@ public class FileInfoInit implements CommandLineRunner {
    @Value("${startYear}")
     private int startYear ;////数据同步开始默认年份
 
+   @Value("${sqlMaxLines}")
+    private int sqlMaxLines ;////数据同步开始默认年份
+
 
     @Override
     public void run(String... args) throws IOException {
         Parameters.No_Find_Times=findTimes;
         Parameters.START_YEAR=startYear;
+        Parameters.SQL_MAX_LINES=sqlMaxLines;
         //获取当前目录，并找到根目录，创建各类文件和文件夹
         getRootPath(ClassUtils.getDefaultClassLoader().getResource("").getPath());
     }
@@ -162,8 +166,9 @@ public class FileInfoInit implements CommandLineRunner {
         Parameters.wsFileInfo.setYear(Integer.parseInt(getStrValue(Parameters.propertiesUtil.getValue(WS+"Year"))));
         Parameters.wsFileInfo.setFileIsSynchronizationNow(Boolean.parseBoolean(getStrValue(Parameters.propertiesUtil.getValue(WS+"FileIsSynchronizationNow"))));
         Parameters.wsFileInfo.setFileIsSynchronization(Boolean.parseBoolean(getStrValue(Parameters.propertiesUtil.getValue(WS+"FileIsSynchronization"))));
+        Parameters.wsFileInfo.setManualAynchNum(Integer.parseInt(getStrValue(Parameters.propertiesUtil.getValue(WS+"ManualAynchNum"))));
         Parameters.wsFileInfo.setFileNum(Integer.parseInt(getStrValue(Parameters.propertiesUtil.getValue(WS+"FileNum"))));
-        Parameters.wsFileInfo.setFileNum(Integer.parseInt(getStrValue(Parameters.propertiesUtil.getValue(WS+"NoFileNum"))));
+        Parameters.wsFileInfo.setNoFileNum(Integer.parseInt(getStrValue(Parameters.propertiesUtil.getValue(WS+"NoFileNum"))));
         Parameters.wsFileInfo.setIsWs(Boolean.parseBoolean(getStrValue(Parameters.propertiesUtil.getValue(WS+"IsWs"))));
         Parameters.wsFileInfo.setStartDate(DateUtil.getDate4Str(getStrValue(Parameters.propertiesUtil.getValue(WS+"StartDate"))));
         Parameters.wsFileInfo.setEndDate(DateUtil.getDate4Str(getStrValue(Parameters.propertiesUtil.getValue(WS+"EndDate"))));
@@ -177,8 +182,9 @@ public class FileInfoInit implements CommandLineRunner {
         Parameters.dzjzFileInfo.setYear(Integer.parseInt(getStrValue(Parameters.propertiesUtil.getValue(DZJZ+"Year"))));
         Parameters.dzjzFileInfo.setFileIsSynchronizationNow(Boolean.parseBoolean(getStrValue(Parameters.propertiesUtil.getValue(DZJZ+"FileIsSynchronizationNow"))));
         Parameters.dzjzFileInfo.setFileIsSynchronization(Boolean.parseBoolean(getStrValue(Parameters.propertiesUtil.getValue(DZJZ+"FileIsSynchronization"))));
+        Parameters.dzjzFileInfo.setManualAynchNum(Integer.parseInt(getStrValue(Parameters.propertiesUtil.getValue(DZJZ+"ManualAynchNum"))));
         Parameters.dzjzFileInfo.setFileNum(Integer.parseInt(getStrValue(Parameters.propertiesUtil.getValue(DZJZ+"FileNum"))));
-        Parameters.dzjzFileInfo.setFileNum(Integer.parseInt(getStrValue(Parameters.propertiesUtil.getValue(DZJZ+"NoFileNum"))));
+        Parameters.dzjzFileInfo.setNoFileNum(Integer.parseInt(getStrValue(Parameters.propertiesUtil.getValue(DZJZ+"NoFileNum"))));
         Parameters.dzjzFileInfo.setIsWs(Boolean.parseBoolean(getStrValue(Parameters.propertiesUtil.getValue(DZJZ+"IsWs"))));
         Parameters.dzjzFileInfo.setStartDate(DateUtil.getDate4Str(getStrValue(Parameters.propertiesUtil.getValue(DZJZ+"StartDate"))));
         Parameters.dzjzFileInfo.setEndDate(DateUtil.getDate4Str(getStrValue(Parameters.propertiesUtil.getValue(DZJZ+"EndDate"))));
@@ -230,6 +236,10 @@ public class FileInfoInit implements CommandLineRunner {
         //Parameters.propertiesUtil.setComment(WS+"FileIsSynchronizationNow","文书是否实时同步");
         Parameters.propertiesUtil.setProperty(WS+"FileIsSynchronization",String.valueOf(Parameters.wsFileInfo.getFileIsSynchronization()));
         //Parameters.propertiesUtil.setComment(WS+"FileIsSynchronization","文书是否正在同步");
+
+        Parameters.propertiesUtil.setProperty(WS+"ManualAynchNum",String.valueOf(Parameters.wsFileInfo.getManualAynchNum()));
+        //Parameters.propertiesUtil.setComment(WS+"FileIsSynchronization","文书手动同步任务的总数");
+
         Parameters.propertiesUtil.setProperty(WS+"FileNum",String.valueOf(Parameters.wsFileInfo.getFileNum()));
         //Parameters.propertiesUtil.setComment(WS+"FileNum","文书同步数量");
         Parameters.propertiesUtil.setProperty(WS+"NoFileNum",String.valueOf(Parameters.wsFileInfo.getFileNum()));
@@ -260,6 +270,10 @@ public class FileInfoInit implements CommandLineRunner {
         //Parameters.propertiesUtil.setComment(DZJZ+"FileIsSynchronizationNow","电子卷宗是否实时同步");
         Parameters.propertiesUtil.setProperty(DZJZ+"FileIsSynchronization",String.valueOf(Parameters.dzjzFileInfo.getFileIsSynchronization()));
         //Parameters.propertiesUtil.setComment(DZJZ+"FileIsSynchronization","电子卷宗是否正在同步");
+
+        Parameters.propertiesUtil.setProperty(DZJZ+"ManualAynchNum",String.valueOf(Parameters.dzjzFileInfo.getManualAynchNum()));
+        //Parameters.propertiesUtil.setComment(DZJZ+"FileIsSynchronization","电子卷宗手动同步任务的总数");
+
         Parameters.propertiesUtil.setProperty(DZJZ+"FileNum",String.valueOf(Parameters.dzjzFileInfo.getFileNum()));
         //Parameters.propertiesUtil.setComment(DZJZ+"FileNum","电子卷宗同步数量");
         Parameters.propertiesUtil.setProperty(DZJZ+"NoFileNum",String.valueOf(Parameters.wsFileInfo.getFileNum()));
@@ -310,6 +324,10 @@ public class FileInfoInit implements CommandLineRunner {
         //未找到文件表
         if (myReceiveService.findTables("SJFH_FILE_NOFILE") == 0) {
             myReceiveService.createNoFileTable();
+        }
+        //未找到文件表
+        if (myReceiveService.findTables("SJFH_FILE_DOWNLOAD") == 0) {
+            myReceiveService.createDownloadTable();
         }
     }
 

@@ -18,10 +18,10 @@ public class MyReceiveApplication {
 
     public static void main(String[] args) {
         //检查程序端口占用，如果被占用杀掉进程
-        new KillPort().check(5173);
+        new KillPort().check(9528);
 
         SpringApplication.run(MyReceiveApplication.class, args);
-        System.out.println("文书卷宗目的端启动成功\n" +
-                "配置信息查看访问： http://" + getIpAddress() + ":5173");
+        System.out.println("文书卷宗同步（目的端）启动成功！\n" +
+                "配置信息查看访问： http://" + getIpAddress() + ":9528");
     }
 }

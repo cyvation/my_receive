@@ -33,7 +33,9 @@ public class MyFileInfo {
 
     Date endDate;
 
-    Integer fileNum;
+    Integer manualAynchNum;
+
+    Integer fileNum;//
 
     Integer noFileNum;
 
@@ -47,6 +49,7 @@ public class MyFileInfo {
         this.fileIsDecrypt = false;
         this.fileIsSynchronization = false;
         this.year = 0;
+        this.manualAynchNum = 0;
         this.fileNum = 0;
         this.noFileNum = 0;
         this.fileIsSynchronizationNow = true;
@@ -176,4 +179,11 @@ public class MyFileInfo {
         this.noFileNum = noFileNum;
     }
 
+    public Integer getManualAynchNum() {
+        return manualAynchNum;
+    }
+
+    public void setManualAynchNum(Integer manualAynchNum) {
+        this.manualAynchNum = manualAynchNum;
+    }
 }

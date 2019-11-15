@@ -1,6 +1,8 @@
 package com.tfswx.my_receive.utils;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -10,14 +12,14 @@ import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.tfswx.my_receive.utils.Parameters.dzjzType;
-import static com.tfswx.my_receive.utils.Parameters.wsType;
+import static com.tfswx.my_receive.utils.Parameters.*;
 
 
 /**
  * 数量太大，第一次扫描3层：单位编码\年份\案件类别
  */
 public class ScanFiles {
+    private static Logger log = LoggerFactory.getLogger(ScanFiles.class);
     private static String RegxBmsh = "[^\\\\]+\\[\\d{4}\\]\\d+号";//部门受案号正则[\\u4e00-\\u9fa5]+\\[\\d{4}\\]\\d+号
     private String fileType;//类型，
     private String prefix;//前缀
@@ -29,7 +31,6 @@ public class ScanFiles {
     private FileWriter writer;
 
     private int file_xh = 0;//w文件序号
-    private int PAGE_SIZE = 500000;
 
     public ScanFiles(String fileType, String folderPrefix, String saveSQLPath) {
         this.fileType = fileType;
@@ -40,7 +41,7 @@ public class ScanFiles {
             prefix = "ws";
             if (!this.scanFolderPath.endsWith(File.separator)) {
                 this.scanFolderPath = this.scanFolderPath + File.separator;
-                System.out.println("文书路径前缀" + this.scanFolderPath);
+                log.info("文书路径前缀" + this.scanFolderPath);
             }
         }
         if (dzjzType.equals(this.fileType)) {
@@ -48,7 +49,7 @@ public class ScanFiles {
             if (this.scanFolderPath.endsWith(File.separator)) {
                 //卷宗删除结尾的\
                 this.scanFolderPath = this.scanFolderPath.substring(0, this.scanFolderPath.lastIndexOf(File.separator));
-                System.out.println("电子卷宗路径前缀" + this.scanFolderPath);
+                log.info("电子卷宗路径前缀" + this.scanFolderPath);
             }
         }
     }
@@ -61,11 +62,11 @@ public class ScanFiles {
     public static void main(String[] args) throws Exception {
         long currentTimeMillis = System.currentTimeMillis();
         long wsCount = new ScanFiles(wsType, "E:\\doc\\", "E:\\").scanFilesWithNoRecursion();
-        System.out.println("文书下载总数：" + wsCount);
+        log.warn("文书下载总数：" + wsCount);
         long jzCount = new ScanFiles(dzjzType, "F:\\JdNewData", "E:\\").scanFilesWithNoRecursion();
-        System.out.println("卷宗下载总数：" + jzCount);
+        log.warn("卷宗下载总数：" + jzCount);
         long currentTimeMillis2 = System.currentTimeMillis();
-        System.out.println("耗时(分)：" + (currentTimeMillis2 - currentTimeMillis) / 60000);
+        log.info("耗时(分)：" + (currentTimeMillis2 - currentTimeMillis) / 60000);
     }
 
     /**
@@ -106,16 +107,15 @@ public class ScanFiles {
                 }
             }
 
-            System.out.println(this.fileType + "三级文件夹数量 ：" + folderCount);
+            log.warn(scanFolderPath + "路径下的三级件夹（文单位\\年份\\案件类别）数量 ：" + folderCount);
             if (folderCount == 0) return 0;
 
             int pageSize = 0;//每个文件最大记录50万条 500000
             //先删除先前的文件
             File file = new File(saveSQLPath);
             File[] tempFile = file.listFiles();
-
             for (File old : tempFile) {
-                if (!old.isDirectory() && old.getName().startsWith(prefix + "_downloaded_" + DateUtil.getStr4DateYMD(new Date()))) {
+                if (!old.isDirectory() && old.getName().startsWith(prefix + "_downloaded_")) {
                     old.delete();
                 }
             }
@@ -132,7 +132,7 @@ public class ScanFiles {
                             //如果仍然是文件夹，将其放入linkedList中
                             queueFiles.add(currentFiles[j]);
                         } else {
-                            if (pageSize >= PAGE_SIZE) {
+                            if (pageSize >= SQL_MAX_LINES) {
                                 createFile(this.fileType);
                                 pageSize = 0;
                             }
@@ -153,7 +153,7 @@ public class ScanFiles {
             if (wsType.equals(type)) {
                 //关闭先前的
                 IOUtils.closeQuietly(writer);
-                wsSqlText = new File(saveSQLPath + prefix + "_downloaded_" + DateUtil.getStr4DateYMD(new Date()) + "_" + file_xh + ".sql");
+                wsSqlText = new File(saveSQLPath + prefix + "_downloaded_" + DateUtil.getStr4DateShort(new Date()) + "_" + file_xh + ".sql");
                 if (wsSqlText.exists()) { // 判断文件是否存在
                     wsSqlText.delete();// 如果存在先执行删除
                     wsSqlText.createNewFile();
@@ -166,7 +166,7 @@ public class ScanFiles {
             } else if (dzjzType.equals(type)) {
                 //关闭先前的
                 IOUtils.closeQuietly(writer);
-                dzjzSqlText = new File(saveSQLPath + prefix + "_downloaded_" + DateUtil.getStr4DateYMD(new Date()) + "_" + file_xh + ".sql");
+                dzjzSqlText = new File(saveSQLPath + prefix + "_downloaded_" + DateUtil.getStr4DateShort(new Date()) + "_" + file_xh + ".sql");
                 if (dzjzSqlText.exists()) { // 判断文件是否存在
                     dzjzSqlText.delete();// 如果存在先执行删除
                     dzjzSqlText.createNewFile();
@@ -178,6 +178,7 @@ public class ScanFiles {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            log.error(e.getMessage());
         }
     }
 
@@ -187,19 +188,19 @@ public class ScanFiles {
         if (wsType.equals(this.fileType)) {
             String wjlj = absolutePath.replace(scanFolderPath, "");
             String bmsah = getBmsah(wjlj);
-            sql = "INSERT INTO SJFH_FILE_DOWNLOADED VALUES ('" + bmsah + "','" + wjlj + "','w');\n";
+            sql = "INSERT INTO SJFH_FILE_DOWNLOAD VALUES ('" + bmsah + "','" + wjlj + "','w');\n";
             writer.write(sql);
             writer.flush();
-            //System.out.println(sql);
+            //log.info(sql);
         }
         //卷宗
         else if (dzjzType.equals(this.fileType)) {
             String wjlj = absolutePath.replace(scanFolderPath, "");
             String bmsah = getBmsah(wjlj);
-            sql = "INSERT INTO SJFH_FILE_DOWNLOADED VALUES ('" + bmsah + "','" + wjlj + "','d');\n";
+            sql = "INSERT INTO SJFH_FILE_DOWNLOAD VALUES ('" + bmsah + "','" + wjlj + "','d');\n";
             writer.write(sql);
             writer.flush();
-            //System.out.println(sql);
+            //log.info(sql);
         }
 
     }

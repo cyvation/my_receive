@@ -52,7 +52,10 @@ public class Parameters {
     public static final String wsType = "w";
 
     //数据同步起始默认年份
-    public  static int START_YEAR = 2015;
+    public  static int START_YEAR = 2014;
+
+    //每个sql文件最大行数
+    public  static int SQL_MAX_LINES = 500000;
 
     //卷宗信息管理类
     public static final String dzjzType = "d";

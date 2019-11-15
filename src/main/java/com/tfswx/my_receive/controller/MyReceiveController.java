@@ -157,7 +157,6 @@ public class MyReceiveController {
     @RequestMapping("/scanDownloadedFiles")
     @ResponseBody
     public JsonResult scanDownloadedFiles(String fileType) {
-        log.warn("收到页面请求：扫描已下载文件，"+fileType);
         return myReceiveService.scanDownloadedFiles(fileType);
     }
 

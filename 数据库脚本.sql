@@ -59,6 +59,23 @@ comment on column SJFH_FILE_NOFILE.FINDTIME
     is '查找次数';
 create index IDX_SJFH_FILE_NOFILE on SJFH_FILE_NOFILE (ID);
 
+create table SJFH_FILE_DOWNLOAD
+(
+    BMSAH    VARCHAR2(100),
+    FILEPATH VARCHAR2(500),
+    FILETYPE CHAR(1)
+);
+-- Add comments to the table
+comment on table SJFH_FILE_DOWNLOAD
+    is '本地已下载文件';
+-- Add comments to the columns
+comment on column SJFH_FILE_DOWNLOAD.BMSAH
+    is '部门受案号';
+comment on column SJFH_FILE_DOWNLOAD.FILEPATH
+    is '文件路径';
+comment on column SJFH_FILE_DOWNLOAD.FILETYPE
+    is '文件类型d：电子卷宗；w：文书';
+
 CREATE OR REPLACE TRIGGER file_dzjz_update
     AFTER INSERT OR UPDATE ON yx_dzjz_jzmlwj
     FOR EACH ROW

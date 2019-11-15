@@ -204,9 +204,34 @@
             })
         }
 
+        function scanDownload(fileType, el) {
+            $(el).hide();
+            $(el).parent().next().text("耐心等待......");
+            $.post("/myReceive/scanDownloadedFiles", {
+                fileType: fileType
+            }, function (result) {
+                if (result.state == 0) {
+                    $(el).parent().next().text(result.data);
+                    $(el).show();
+                } else {
+                    $(el).show();
+                    alert(result.data);
+                }
+            })
+        }
+
         function startFileTb(isWs, el) {
+            // $(el).hide();
+            $(el).parent().html("<A href='/index.html'  target='_blank' style='cursor: pointer'>查看详情</A>");
             var startTime = isWs ? $("#wsStartTime").val() : $("#dzjzStartTime").val();
             var endTime = isWs ? $("#wsEndTime").val() : $("#dzjzEndTime").val();
+
+            if (isWs) {
+                $("#wsFileIsSynchronization").text("是");
+            } else {
+                $("#dzjzFileIsSynchronization").text("是");
+            }
+
             $.post("/myReceive/startFileSynchronization", {
                 "isWs": isWs,
                 "startTime": startTime,
@@ -220,8 +245,8 @@
             })
         }
 
-        function isMyCanSendNow( el) {
-            var isMyCanSendNow = (el.value == '是' ? true : false );
+        function isMyCanSendNow(el) {
+            var isMyCanSendNow = (el.value == '是' ? true : false);
             $.post("/myReceive/isMyCanSendNow", {"isMyCanSendNow": isMyCanSendNow}, function (result) {
                 if (result.state == 0) {
                     if (el.value == '是') {
@@ -237,6 +262,7 @@
                 }
             })
         }
+
         function openReceiveNow(isWs, el) {
             $.post("/myReceive/updateFileSynchronizationNow", {"isWs": isWs}, function (result) {
                 if (result.state == 0) {
@@ -300,10 +326,10 @@
             <tr>
                 <th>文书是否解密</th>
                 <td id="wsIsDecrypt"></td>
-                <td><!--<input type="button" value="解密" onclick="updateFileIsDecrypt(true,this)">--></td>
+                <td>&nbsp;<!--<input type="button" value="解密" onclick="updateFileIsDecrypt(true,this)">--></td>
                 <th>电子卷宗是否解密</th>
                 <td id="dzjzIsDecrypt"></td>
-                <td><!--<input type="button" value="解密" onclick="updateFileIsDecrypt(false,this)">--></td>
+                <td>&nbsp;<!--<input type="button" value="解密" onclick="updateFileIsDecrypt(false,this)">--></td>
             </tr>
 
             <tr>
@@ -329,18 +355,24 @@
                     <input type="button" class="myUpdate" value="修改" onclick="updateThis(this)">
                     <input type="button" value="确定" onclick="updateSendIP(true,this)" style="display: none">
                 </td>
-
                 <th>电子卷宗请源端IP</th>
                 <td id="dzjzSendIP"></td>
                 <td>
                     <input type="button" class="myUpdate" value="修改" onclick="updateThis(this)">
                     <input type="button" value="确定" onclick="updateSendIP(false,this)" style="display: none">
                 </td>
-
             </tr>
             <tr>
-                <th>是否监听新文件更新<font color="red">(*不要更改)</font> </th>
-                <td id="isMyCanSendNow" ></td>
+                <th>扫描已下载文书<font color="red">(*耗资源)</font></th>
+                <td id="wsScan"><input type="button" value="确定" onclick="scanDownload('w',this)"></td>
+                <td>&nbsp;</td>
+                <th>扫描已下载电子卷宗<font color="red">(*耗资源)</font></th>
+                <td id="dzjzScan"><input type="button" value="确定" onclick="scanDownload('d',this)"></td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <th>是否监听新文件更新<font color="red">(*不要更改)</font></th>
+                <td id="isMyCanSendNow"></td>
                 <td align="left" colspan="4">
                     <input type="button" value="是" onclick="isMyCanSendNow(this)">
                 </td>
@@ -386,16 +418,19 @@
 
                 <th>文书初始化同步截止时间(文书创建时间)</th>
                 <td colspan="1"><input type="text" id="wsEndTime" placeholder="请选择时间"></td>
-<!--                <td colspan="1">2</td>-->
+                <!--                <td colspan="1">2</td>-->
                 <th>电子卷宗初始化同步截止时间(卷宗创建时间)</th>
                 <td colspan="1"><input type="text" id="dzjzEndTime" placeholder="请选择时间"></td>
-<!--                <td colspan="1">4</td>-->
+                <!--                <td colspan="1">4</td>-->
             </tr>
             <tr>
                 <th>文书开始同步</th>
-                <td colspan="2"><input type="button" value="开启同步" id="startFileTb_ws" onclick="startFileTb(true)"></td>
+                <td colspan="2"><input type="button" value="开启同步" id="startFileTb_ws"
+                                       onclick="startFileTb(true,this)">
+                </td>
                 <th>电子卷宗开始同步</th>
-                <td colspan="2"><input type="button" value="开启同步" id="startFileTb_dzjz" onclick="startFileTb(false)">
+                <td colspan="2"><input type="button" value="开启同步" id="startFileTb_dzjz"
+                                       onclick="startFileTb(false,this)">
                 </td>
             </tr>
 

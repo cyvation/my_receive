@@ -89,6 +89,14 @@ public class MyReceiveServiceImpl implements MyReceiveService {
         //将信息写入log文件
         writeFile(Parameters.wsFileInfo.getLogFilePath(), "文书日志地址改为：" + wsLogFilePath + "\r\n\r\n文书未找到地址改为：" + wsNoFilePath + "\r\n\r\n------文书日志地址更新-------");
         writeFile(Parameters.dzjzFileInfo.getLogFilePath(), "电子卷宗日志地址改为：" + dzjzLogFilePath + "\r\n\r\n电子卷宗未找到地址改为：" + dzjzNoFilePath + "\r\n\r\n------电子卷宗日志地址更新-------");
+
+        String wsSaveSQLPath = Parameters.rootPath + "SJFH2\\ws\\download\\";
+        //扫描存放已下载文书sql文件夹
+        FileUtil.mkdirsFile(wsSaveSQLPath);
+        String dzjzSaveSQLPath = Parameters.rootPath + "SJFH2\\dzjz\\download\\";
+        //扫描存放已下载电子卷宗sql文件夹
+        FileUtil.mkdirsFile(dzjzSaveSQLPath);
+
     }
 
 
@@ -344,27 +352,28 @@ public class MyReceiveServiceImpl implements MyReceiveService {
         if (dzjzType.equals(fileType)) {
             msg = "电子卷宗";
         }
+        log.warn("扫描已下载" + msg + "文件，" + fileType);
         try {
+            String wsSaveSQLPath = Parameters.rootPath + "SJFH2\\ws\\download\\";
+            String dzjzSaveSQLPath = Parameters.rootPath + "SJFH2\\dzjz\\download\\";
             long currentTimeMillis = System.currentTimeMillis();
             long count = -1;
             if (wsType.equals(fileType)) {
                 //存放已下载文书扫描sql文件
-                String wsSaveSQLPath = Parameters.rootPath + "SJFH2\\ws\\download\\";
-
-                count = new ScanFiles(fileType,Parameters.wsFileInfo.getFilePathTitle(), wsSaveSQLPath).scanFilesWithNoRecursion();
+                count = new ScanFiles(fileType, Parameters.wsFileInfo.getFilePathTitle(), wsSaveSQLPath).scanFilesWithNoRecursion();
             } else if (dzjzType.equals(fileType)) {
                 //存放已下载电子卷宗扫描sql文件
-                String dzjzSaveSQLPath = Parameters.rootPath + "SJFH2\\dzjz\\download\\";
-                count = new ScanFiles(fileType,Parameters.dzjzFileInfo.getFilePathTitle(), dzjzSaveSQLPath).scanFilesWithNoRecursion();
+                count = new ScanFiles(fileType, Parameters.dzjzFileInfo.getFilePathTitle(), dzjzSaveSQLPath).scanFilesWithNoRecursion();
             }
             log.warn(msg + "已下载文件总数：" + count);
             long currentTimeMillis2 = System.currentTimeMillis();
-            System.out.println("耗时(分)：" + (currentTimeMillis2 - currentTimeMillis) / 60000);
-            return new JsonResult(msg + "已下载文件扫描完成，总数：" + count + " ，耗时(分)：" + (currentTimeMillis2 - currentTimeMillis) / 60000);
+            log.warn("耗时(分)：" + (currentTimeMillis2 - currentTimeMillis) / 60000);
+            return new JsonResult(msg + "已下载文件扫描完成，总数：" + count + " ，耗时：" + (currentTimeMillis2 - currentTimeMillis) / 60000
+                    + "分钟 ；sql文件保存在：" + wsSaveSQLPath);
         } catch (Exception e) {
             e.printStackTrace();
             log.error(e.getMessage());
-            return new JsonResult(msg + "扫描失败" + e.getMessage());
+            return new JsonResult(JsonResult.ERROR, "扫描失败" + e.getMessage());
         }
     }
 
@@ -428,10 +437,28 @@ public class MyReceiveServiceImpl implements MyReceiveService {
         if (myFileInfo.getIsWs()) {
             log.info("根据条件参数查询需要同步的文书列表...");
             fileList = fileReceiveMapper.getWsFilePathes(map);
+            wsFileInfo.setManualAynchNum(fileList.size());
+            if (fileList.size() > 0) {
+                wsFileInfo.setNoFileNum(0);//手動同步有數據就重置为0重新计数
+                wsFileInfo.setManualAynchNum(fileList.size());
+                updateProperties(myFileInfo, "ManualAynchNum", String.valueOf(fileList.size()));
+                myFileInfo.setNoFileNum(0);
+                myFileInfo.setManualAynchNum(fileList.size());
+            }
         } else {
             log.info("根据条件参数查询需要同步的电子卷宗列表...");
             fileList = fileReceiveMapper.getDzjzFilePathes(map);
+            dzjzFileInfo.setManualAynchNum(fileList.size());
+            if (fileList.size() > 0) {
+                dzjzFileInfo.setNoFileNum(0);//手動同步有數據就重置为0重新计数
+                dzjzFileInfo.setManualAynchNum(fileList.size());
+                updateProperties(myFileInfo, "ManualAynchNum", String.valueOf(fileList.size()));
+                myFileInfo.setNoFileNum(0);
+                myFileInfo.setManualAynchNum(fileList.size());
+            }
         }
+
+
         //记录同步开始时间和信息
         String synStartLog = "文件同步开始时间：" + getStr4Date(new Date()) + "\r\n" +
                 "同步时间：" + getStr4Date(myFileInfo.getStartDate()) + "~" + getStr4Date(myFileInfo.getEndDate()) + "\r\n" +
@@ -448,6 +475,9 @@ public class MyReceiveServiceImpl implements MyReceiveService {
             writeNowReceiveFile(myFileInfo, getFileByRequset(myFile), myFile);
         }
         //记录同步结束时间和信息
+        int notFindCount = myFileInfo.getIsWs() ? wsFileInfo.getNoFileNum() : dzjzFileInfo.getNoFileNum();
+        updateProperties(myFileInfo, "NoFileNum ", String.valueOf(notFindCount));
+
         String synEndLog = "文件同步结束时间：" + getStr4Date(new Date()) + "\r\n" +
                 "同步时间：" + getStr4Date(myFileInfo.getStartDate()) + "~" + getStr4Date(myFileInfo.getEndDate()) + "\r\n" +
                 "文件数量：" + fileList.size() + "\r\n" +
@@ -459,6 +489,9 @@ public class MyReceiveServiceImpl implements MyReceiveService {
             synchronizationByYear(myFileInfo, myFileInfo.getYear() - 1);
         } else {
             //若结束，则删除相关信息，并记录信息
+            notFindCount = myFileInfo.getIsWs() ? wsFileInfo.getNoFileNum() : dzjzFileInfo.getNoFileNum();
+            myFileInfo.setNoFileNum(notFindCount);
+
             finashSynchronization(myFileInfo);
             String synCountMsg = "--------------" + (myFileInfo.getIsWs() ? "文书" : "卷宗") + "同步结束-------------" + "\r\n" +
                     "******文件同步结束时间：" + getStr4Date(new Date()) + "******" + "\r\n" +
@@ -492,6 +525,12 @@ public class MyReceiveServiceImpl implements MyReceiveService {
         myFileInfo.setEndDate(null);
         myFileInfo.setFileIsSynchronization(false);
         updatePropertiesTime(myFileInfo);
+        if (myFileInfo.getFileNum() > 0) {
+            updateProperties(myFileInfo, "FileNum", String.valueOf(myFileInfo.getFileNum()));
+        }
+        if (myFileInfo.getNoFileNum() > 0) {
+            updateProperties(myFileInfo, "NoFileNum", String.valueOf(myFileInfo.getNoFileNum()));
+        }
         updateProperties(myFileInfo, "FileIsSynchronization", "false");
         stopCron(myFileInfo);
         myFileInfo.setFuture(null);
@@ -599,6 +638,11 @@ public class MyReceiveServiceImpl implements MyReceiveService {
     }
 
     @Override
+    public void createDownloadTable() {
+        fileReceiveMapper.createDownloadTable();
+    }
+
+    @Override
     public void createWsTrigger() {
         fileReceiveMapper.createWsTrigger();
     }
@@ -610,10 +654,10 @@ public class MyReceiveServiceImpl implements MyReceiveService {
 
 
     /**
-     * 实时更新方法，每3分进行数据检测
+     * 实时更新方法，每1分进行数据检测
      */
 //    @Scheduled(cron = "17 */3 * * * ?")
-    @Scheduled(fixedDelay = 1000 * 60 * 3, initialDelay = 51000)
+    @Scheduled(fixedDelay = 1000 * 60 * 1, initialDelay = 1000 * 90)
     public void checkNews() {
         //判断是否可以进行同步和判断是否有文件可以被更新
         if (Parameters.isCanSendNow && fileReceiveMapper.getNewestNum() > 0) {
@@ -654,7 +698,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
     /**
      * 对未找到文件进行查找（前10次为找的的文件为5分钟找一次，预防文件传输延迟造成的错误）
      */
-    @Scheduled(cron = "59 */29 * * * ?")  //每隔29分钟执行一次定时任务
+    @Scheduled(cron = "59 */9 * * * ?")  //每隔29分钟执行一次定时任务
     public void keepUpNews() {
         //查找10次以内未找到的文件信息
         List<MyFile> fileList = fileReceiveMapper.getNoFileByFindTime(No_Find_Times);
@@ -713,7 +757,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
      * @param findTime 未找到次数
      */
     public void writeNoFileByTimes(Integer findTime) {
-        List<MyFile> fileList = fileReceiveMapper.getNoFileByFindTime(findTime);
+        List<MyFile> fileList = fileReceiveMapper.getNoFileByFindTime(findTime);//TODO 分页查询的
         log.info("未找到的文件数量为：" + fileList.size());
         if (fileList.size() == 0) {
             return;
@@ -760,7 +804,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
      * @param fileByte   文件byte[]
      * @param myFile     文件信息
      */
-    @Async
+    @Async //TODO:异步调用
     public void writeNowReceiveFile3(MyFileInfo myFileInfo, byte[] fileByte, MyFile myFile) {
         //若文件不为空则写入并删除记录
         if (fileByte != null && fileByte.length != 0) {
@@ -779,7 +823,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
      * @param fileByte   文件byte[]
      * @param myFile     文件信息
      */
-    @Async
+    @Async //TODO:异步调用
     public void writeNowReceiveFile2(MyFileInfo myFileInfo, byte[] fileByte, MyFile myFile) {
         //若文件不为空则写入并删除记录，否则修改数据库记录使未找到次数+1
         if (fileByte != null && fileByte.length != 0) {
@@ -800,16 +844,22 @@ public class MyReceiveServiceImpl implements MyReceiveService {
      * @param fileByte   文件byte[]
      * @param myFile     文件信息
      */
-    @Async
+    @Async  //TODO:异步调用
     public void writeNowReceiveFile(MyFileInfo myFileInfo, byte[] fileByte, MyFile myFile) {
         //若文件不为空则写入并删除记录，否则记录未找到文件并往未找到文件表中添加数据
         if (fileByte != null && fileByte.length != 0) {
             log.info(myFile.getFileType() + " 已下载 [" + DateUtil.getStr4Date(myFile.getCjsj()) + "] " + myFile.getFilePath());
             new Thread(new WriteFile(myFileInfo.getFileIsDecrypt(), myFileInfo.getFilePathTitle() + myFile.getFilePath(), fileByte)).start();
         } else {
+            if (myFileInfo.getIsWs()) {
+                wsFileInfo.setNoFileNum(wsFileInfo.getNoFileNum() + 1);
+            } else {
+                dzjzFileInfo.setNoFileNum(dzjzFileInfo.getNoFileNum() + 1);
+            }
             log.info(myFile.getFileType() + " 未找到 [" + DateUtil.getStr4Date(myFile.getCjsj()) + "] " + myFile.getFilePath());
             writeFile(myFileInfo.getNoFilePath(), "文件名：" + myFile.getFilePath());
             fileReceiveMapper.insertNoFile(myFile);
+
         }
     }
 
@@ -817,7 +867,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
     public byte[] getFileByRequset(MyFile myFile) {
         CloseableHttpClient httpclient = HttpClients.createDefault();
         RequestConfig requestConfig = RequestConfig.custom()
-                .setSocketTimeout(30000) //指客户端从服务器读取数据的毫秒timeout
+                .setSocketTimeout(60000) //指客户端从服务器读取数据的毫秒timeout 60秒
                 .setConnectTimeout(5000) //指客户端和服务器建立连接的timeout
                 .setConnectionRequestTimeout(5000) //指从连接池获取连接的timeout
                 .build();

@@ -99,6 +99,11 @@ public interface MyReceiveService {
      */
     void createNoFileTable();
 
+    /**
+     * 用于分析本地已下载文件
+     */
+    void createDownloadTable();
+
     void createWsTrigger();
 
     /**

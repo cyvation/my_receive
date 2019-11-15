@@ -56,3 +56,5 @@ sendIp:
 #再次查找次数基数，最大会重复2倍
 findTimes: 2
 startYear: 2014
+#每个sql文件最大行数， 默认 50万行
+sqlMaxLines: 500000

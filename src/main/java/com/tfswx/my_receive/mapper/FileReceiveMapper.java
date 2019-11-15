@@ -65,8 +65,8 @@ public interface FileReceiveMapper {
      * @param
      * @return
      */
+    int getNoFileNumByFindTime(int findTime);
 
-//    int getNoFileNumByFindTime(int findTime);
     /**
      * 通过【findTime】没找到的次数获取没有找到的文件，小于
      * @param findTime
@@ -123,4 +123,5 @@ public interface FileReceiveMapper {
 
     void createWsTrigger();
 
+    void createDownloadTable();
 }

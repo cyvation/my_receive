@@ -76,6 +76,12 @@ public class DateUtil {
         }
         return new SimpleDateFormat("yyyy-MM-dd").format(date);
     }
+    public static String getStr4DateShort(Date date) {
+        if(date==null){
+            return "";
+        }
+        return new SimpleDateFormat("yyyyMMdd").format(date);
+    }
 
     /**
      * 获取今年的年份

@@ -85,6 +85,8 @@
                 }
                 $("#wsNoFileNum").text(ws.noFileNum);
                 $("#dzjzNoFileNum").text(dzjz.noFileNum);
+                $("#wsManualAynchNum").text(ws.manualAynchNum);
+                $("#dzjzManualAynchNum").text(dzjz.manualAynchNum);
                 $("#wsTbNum").text(ws.fileNum);
                 $("#dzjzTbNum").text(dzjz.fileNum);
                 $("#dwbm").text(result.dwbm);
@@ -105,14 +107,14 @@
 
             count++;
             //去掉定时器的方法
-            if (count == (6*3)) {//3分钟
+            if (count == (12*3)) {//3分钟
                 window.clearInterval(t1);
                 alert("实时刷新暂停，可刷新页面再次启用");
                 window.location.reload();
             }
         }
 
-        var t1=window.setInterval(getInfo, 1000*10);
+        var t1=window.setInterval(getInfo, 1000*5);
 
 
         $(document).ready(function(){
@@ -172,13 +174,19 @@
                 <td colspan="2" id="dzjzFileIsSynchronization"></td>
             </tr>
             <tr>
-                <th>文书处理数量</th>
+                <th>文书最近任务总数</th>
+                <td id="wsManualAynchNum" colspan="2"></td>
+                <th>电子卷宗最近任务总数</th>
+                <td id="dzjzManualAynchNum" colspan="2"></td>
+            </tr>
+            <tr>
+                <th>文书已处理数量</th>
                 <td id="wsTbNum" colspan="2"></td>
-                <th>电子卷宗处理数量</th>
+                <th>电子卷宗已处理数量</th>
                 <td id="dzjzTbNum" colspan="2"></td>
             </tr>
            <tr>
-                <th>文书未找到文件数量</th>
+                <th>文书未找到数量</th>
                 <td id="wsNoFileNum" colspan="2"></td>
                 <th>电子卷宗未找到数量</th>
                 <td id="dzjzNoFileNum" colspan="2"></td>
