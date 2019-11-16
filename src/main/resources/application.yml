@@ -45,6 +45,11 @@ mybatis:
   mapper-locations:
     - classpath:/mapper/*.xml
   type-aliases-package: com.tfswx.my_send.entity
+pagehelper:
+  helperDialect: oracle
+  reasonable: true
+  supportMethodsArguments: true
+  params: count=countSql
 logging:
   level:
    com.swx.sjfh.server.mapper : debug
@@ -56,5 +61,7 @@ sendIp:
 #再次查找次数基数，最大会重复2倍
 findTimes: 2
 startYear: 2014
-#每个sql文件最大行数， 默认 50万行
-sqlMaxLines: 500000
+#PageHelper分页大小
+pageSize: 5000
+#每个sql文件最大行数， 默认 100万行
+sqlMaxLines: 1000000

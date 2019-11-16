@@ -17,6 +17,7 @@ public interface FileReceiveMapper {
      * @return
      */
     List<MyFile> getWsFilePathes(Map<String,Object> map);
+    int countWsFilePathes(Map<String,Object> map);
 
     /**
      * 获取同步的【电子卷宗】
@@ -24,6 +25,7 @@ public interface FileReceiveMapper {
      * @return
      */
     List<MyFile> getDzjzFilePathes(Map<String,Object> map);
+    int countDzjzFilePathes(Map<String,Object> map);
 
     /**
      * 添加找不到的文件

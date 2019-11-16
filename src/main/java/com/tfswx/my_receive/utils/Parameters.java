@@ -51,11 +51,14 @@ public class Parameters {
     //文书信息管理类
     public static final String wsType = "w";
 
+    //分页大小
+    public  static int PAGE_SIZE = 5000;
+
     //数据同步起始默认年份
     public  static int START_YEAR = 2014;
 
-    //每个sql文件最大行数
-    public  static int SQL_MAX_LINES = 500000;
+    //每个sql文件最大行数 一百万
+    public  static int SQL_MAX_LINES = 1000000;
 
     //卷宗信息管理类
     public static final String dzjzType = "d";

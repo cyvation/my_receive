@@ -11,6 +11,23 @@
         <result column="FINDTIME" jdbcType="INTEGER" property="findTime"/>
     </resultMap>
 
+    <!--     count文书文件 -->
+    <select id="countWsFilePathes" parameterType="map" resultType="java.lang.Integer">
+       SELECT count(1)
+        FROM yx_ws_ajjzwj f
+      INNER JOIN tyyw_gg_ajjbxx aj ON f.bmsah = aj.bmsah AND aj.sfsc = 'N'
+        <if test='null != typeRestriction and ""!=typeRestriction'>
+             AND aj.ajlb_bm IN (${typeRestriction})
+        </if>
+        <if test='null != ajdwbm and ""!=ajdwbm'>
+            AND ${ajdwbm}
+        </if>
+       WHERE f.sfsc &lt;> 'Y'
+       <if test='null != fdwbm and ""!=fdwbm'>
+            AND ${fdwbm}
+       </if>
+            AND f.cjsj >= #{startDate} AND f.cjsj &lt;= #{endDate}
+    </select>
     <!--     查询文书文件-->
     <select id="getWsFilePathes" parameterType="map" resultMap="resultMap">
        SELECT f.wscflj filePath,
@@ -35,6 +52,23 @@
        ORDER BY f.cjsj
     </select>
 
+    <!--    count卷宗文件-->
+    <select id="countDzjzFilePathes" parameterType="map" resultType="java.lang.Integer">
+        SELECT count(1)
+        FROM yx_dzjz_jzmlwj f
+       INNER JOIN tyyw_gg_ajjbxx aj ON f.bmsah = aj.bmsah AND aj.sfsc = 'N'
+        <if test='null != typeRestriction and ""!=typeRestriction'>
+            AND aj.ajlb_bm IN (${typeRestriction})
+        </if>
+        <if test='null != ajdwbm and ""!=ajdwbm'>
+            AND ${ajdwbm}
+        </if>
+        WHERE f.sfsc = 'N'
+        <if test='null != fdwbm and ""!=fdwbm'>
+             AND ${fdwbm}
+        </if>
+             AND f.cjsj >= #{startDate} AND f.cjsj &lt;= #{endDate}
+    </select>
     <!--    查询卷宗文件-->
     <select id="getDzjzFilePathes" parameterType="map" resultMap="resultMap">
         SELECT f.wjlj || '\' || f.wjmc || f.wjhz || '.encry' filePath,
@@ -61,11 +95,11 @@
 
 
     <select id="getNewestNum" resultType="java.lang.Integer">
-        select count(1) from sjfh_file_newest where  ROWNUM &lt;= 10000
+        select count(1) from sjfh_file_newest
     </select>
 
     <select id="getNewest" parameterType="java.util.Map" resultMap="resultMap">
-        select id,filePath,type,fileType,zhxgsj,cjsj from sjfh_file_newest
+        select id,filePath,type,fileType,zhxgsj,cjsj from sjfh_file_newest where  ROWNUM &lt;= 5000
     </select>
 
     <delete id="deleteNewestById" parameterType="java.lang.String">
@@ -85,7 +119,7 @@
     </select>
 
     <select id="getNoFileByFindTime" resultMap="resultMap" parameterType="java.lang.Integer">
-        select id,filePath,type,fileType,zhxgsj,cjsj,findTime from SJFH_FILE_NOFILE WHERE FINDTIME &lt;= #{findTime} AND ROWNUM &lt;= 10000
+        select id,filePath,type,fileType,zhxgsj,cjsj,findTime from SJFH_FILE_NOFILE WHERE FINDTIME &lt;= #{findTime} AND ROWNUM &lt;= 5000
     </select>
 
     <delete id="deleteNoFileById" parameterType="java.lang.String">

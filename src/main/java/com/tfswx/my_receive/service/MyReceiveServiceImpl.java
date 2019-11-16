@@ -1,5 +1,7 @@
 package com.tfswx.my_receive.service;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.tfswx.my_receive.entity.MyFile;
 import com.tfswx.my_receive.entity.MyFileInfo;
 import com.tfswx.my_receive.entity.WriteFile;
@@ -21,6 +23,7 @@ import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.TriggerContext;
 import org.springframework.scheduling.annotation.Async;
@@ -28,13 +31,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.io.*;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.tfswx.my_receive.utils.DateUtil.getStr4Date;
 import static com.tfswx.my_receive.utils.Parameters.*;
@@ -49,6 +52,10 @@ public class MyReceiveServiceImpl implements MyReceiveService {
 
     @Autowired
     FileReceiveMapper fileReceiveMapper;
+
+    // 1.获取事务控制管理器
+    @Autowired
+    private DataSourceTransactionManager transactionManager;
 
     //写日志的类
 //    static FileWriter fw;
@@ -422,7 +429,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
         //添加防止同步出错的定时器
         setCron(myFileInfo);
         //接收文件信息的集合
-        List<MyFile> fileList;
+//        List<MyFile> fileList;
         //传入数据库的信息
         Map<String, Object> map = new HashMap<>();
         map.put("fdwbm", getDwbmSql("f.dwbm", Parameters.dwbm));
@@ -433,28 +440,29 @@ public class MyReceiveServiceImpl implements MyReceiveService {
         map.put("endDate", myFileInfo.getEndDate());
 
         log.info("条件参数 " + getDwbmSql("f.dwbm", Parameters.dwbm) + "；startDate:" + getStr4Date(myFileInfo.getStartDate()) + "；endDate:" + getStr4Date(myFileInfo.getEndDate()));
+        int totalRows = 0;
         //判断类型进行数据查询
         if (myFileInfo.getIsWs()) {
-            log.info("根据条件参数查询需要同步的文书列表...");
-            fileList = fileReceiveMapper.getWsFilePathes(map);
-            wsFileInfo.setManualAynchNum(fileList.size());
-            if (fileList.size() > 0) {
+            log.info("根据条件参数查询需要同步的文书...");
+            totalRows = fileReceiveMapper.countWsFilePathes(map);
+            log.info("待同步文书数量是：" + totalRows);
+            if (totalRows > 0) {
                 wsFileInfo.setNoFileNum(0);//手動同步有數據就重置为0重新计数
-                wsFileInfo.setManualAynchNum(fileList.size());
-                updateProperties(myFileInfo, "ManualAynchNum", String.valueOf(fileList.size()));
+                wsFileInfo.setManualAynchNum(totalRows);
                 myFileInfo.setNoFileNum(0);
-                myFileInfo.setManualAynchNum(fileList.size());
+                myFileInfo.setManualAynchNum(totalRows);
+                updateProperties(myFileInfo, "ManualAynchNum", String.valueOf(totalRows));
             }
         } else {
-            log.info("根据条件参数查询需要同步的电子卷宗列表...");
-            fileList = fileReceiveMapper.getDzjzFilePathes(map);
-            dzjzFileInfo.setManualAynchNum(fileList.size());
-            if (fileList.size() > 0) {
+            log.info("根据条件参数查询需要同步的电子卷宗...");
+            totalRows = fileReceiveMapper.countDzjzFilePathes(map);
+            log.info("待同步卷宗数量是：" + totalRows);
+            if (totalRows > 0) {
                 dzjzFileInfo.setNoFileNum(0);//手動同步有數據就重置为0重新计数
-                dzjzFileInfo.setManualAynchNum(fileList.size());
-                updateProperties(myFileInfo, "ManualAynchNum", String.valueOf(fileList.size()));
+                dzjzFileInfo.setManualAynchNum(totalRows);
                 myFileInfo.setNoFileNum(0);
-                myFileInfo.setManualAynchNum(fileList.size());
+                myFileInfo.setManualAynchNum(totalRows);
+                updateProperties(myFileInfo, "ManualAynchNum", String.valueOf(totalRows));
             }
         }
 
@@ -462,25 +470,48 @@ public class MyReceiveServiceImpl implements MyReceiveService {
         //记录同步开始时间和信息
         String synStartLog = "文件同步开始时间：" + getStr4Date(new Date()) + "\r\n" +
                 "同步时间：" + getStr4Date(myFileInfo.getStartDate()) + "~" + getStr4Date(myFileInfo.getEndDate()) + "\r\n" +
-                "文件数量：" + fileList.size() + "\r\n" +
+                "文件数量：" + totalRows + "\r\n" +
                 "-------------------时间分割线-------------------";
         writeFile(myFileInfo.getLogFilePath(), synStartLog);
         log.info(synStartLog);
-        //遍历数据信息，进行数据查询和写入
-        for (MyFile myFile : fileList) {
-            myFileInfo.setRunDate(new Date());
-            myFileInfo.setStartDate(myFile.getCjsj());
-            updateProperties(myFileInfo, "StartDate", getStr4Date(myFileInfo.getStartDate()));
-            myFileInfo.setFileNum(myFileInfo.getFileNum() + 1);
-            writeNowReceiveFile(myFileInfo, getFileByRequset(myFile), myFile);
+
+        int pages =  totalRows / PAGE_SIZE + (totalRows % PAGE_SIZE == 0L ? 0 : 1);//算法借鉴com.github.pagehelper.Page::public void setTotal(long total)
+        //按页面大小循环
+        for(int i=1;i<=pages;i++){
+            List<MyFile> fileList;
+            if(myFileInfo.getIsWs()) {
+                PageHelper.startPage(i,PAGE_SIZE,false);//false 只查询不用count
+                fileList = fileReceiveMapper.getWsFilePathes(map);
+            }else {
+                PageHelper.startPage(i,PAGE_SIZE,false);
+                fileList = fileReceiveMapper.getDzjzFilePathes(map);
+            }
+            //遍历数据信息，进行数据查询和写入
+            DefaultTransactionDefinition def = new DefaultTransactionDefinition();//获取事务定义
+            def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);//设置事务隔离级别，开启新事务(原事务挂起)
+            TransactionStatus status = transactionManager.getTransaction(def); // 获得事务状态
+
+            for (MyFile myFile : fileList) {
+                myFileInfo.setRunDate(new Date());
+                myFileInfo.setStartDate(myFile.getCjsj());
+                updateProperties(myFileInfo, "StartDate", getStr4Date(myFileInfo.getStartDate()));
+                myFileInfo.setFileNum(myFileInfo.getFileNum() + 1);
+                //从源端下载文件
+                byte[] dataBtye = getFileByRequset(myFile);
+                writeNowReceiveFile(myFileInfo, dataBtye, myFile);
+            }
+            //强制提交事务
+            transactionManager.commit(status);
         }
+
+
         //记录同步结束时间和信息
         int notFindCount = myFileInfo.getIsWs() ? wsFileInfo.getNoFileNum() : dzjzFileInfo.getNoFileNum();
         updateProperties(myFileInfo, "NoFileNum ", String.valueOf(notFindCount));
 
         String synEndLog = "文件同步结束时间：" + getStr4Date(new Date()) + "\r\n" +
                 "同步时间：" + getStr4Date(myFileInfo.getStartDate()) + "~" + getStr4Date(myFileInfo.getEndDate()) + "\r\n" +
-                "文件数量：" + fileList.size() + "\r\n" +
+                "文件数量：" + totalRows + "\r\n" +
                 "-------------------时间分割线-------------------";
         writeFile(myFileInfo.getLogFilePath(), synEndLog);
         log.info(synEndLog);
@@ -656,8 +687,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
     /**
      * 实时更新方法，每1分进行数据检测
      */
-//    @Scheduled(cron = "17 */3 * * * ?")
-    @Scheduled(fixedDelay = 1000 * 60 * 1, initialDelay = 1000 * 90)
+    @Scheduled(cron = "59 */3 * * * ?")
     public void checkNews() {
         //判断是否可以进行同步和判断是否有文件可以被更新
         if (Parameters.isCanSendNow && fileReceiveMapper.getNewestNum() > 0) {
@@ -698,7 +728,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
     /**
      * 对未找到文件进行查找（前10次为找的的文件为5分钟找一次，预防文件传输延迟造成的错误）
      */
-    @Scheduled(cron = "59 */9 * * * ?")  //每隔29分钟执行一次定时任务
+    @Scheduled(cron = "59 */29 * * * ?")  //每隔29分钟执行一次定时任务
     public void keepUpNews() {
         //查找10次以内未找到的文件信息
         List<MyFile> fileList = fileReceiveMapper.getNoFileByFindTime(No_Find_Times);
@@ -804,7 +834,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
      * @param fileByte   文件byte[]
      * @param myFile     文件信息
      */
-    @Async //TODO:异步调用
+    @Async //WARN:异步调用
     public void writeNowReceiveFile3(MyFileInfo myFileInfo, byte[] fileByte, MyFile myFile) {
         //若文件不为空则写入并删除记录
         if (fileByte != null && fileByte.length != 0) {
@@ -823,7 +853,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
      * @param fileByte   文件byte[]
      * @param myFile     文件信息
      */
-    @Async //TODO:异步调用
+    @Async //WARN:异步调用
     public void writeNowReceiveFile2(MyFileInfo myFileInfo, byte[] fileByte, MyFile myFile) {
         //若文件不为空则写入并删除记录，否则修改数据库记录使未找到次数+1
         if (fileByte != null && fileByte.length != 0) {
@@ -844,7 +874,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
      * @param fileByte   文件byte[]
      * @param myFile     文件信息
      */
-    @Async  //TODO:异步调用
+    @Async  //WARN:异步调用
     public void writeNowReceiveFile(MyFileInfo myFileInfo, byte[] fileByte, MyFile myFile) {
         //若文件不为空则写入并删除记录，否则记录未找到文件并往未找到文件表中添加数据
         if (fileByte != null && fileByte.length != 0) {

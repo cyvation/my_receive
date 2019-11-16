@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>配置页面</title>
+    <title>文件接收调试</title>
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <script src="jquery-3.3.1.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
@@ -29,7 +29,14 @@
                 } else {
                     $("#dzjzIsDecrypt").text("否");
                 }
-
+                //是否进行新文件实时更新
+                if (result.isMyCanSendNow) {
+                    $("#isMyCanSendNow").text("是");
+                    $("#isMyCanSendNow").next().children("input").val("否");
+                } else {
+                    $("#isMyCanSendNow").text("否");
+                    $("#isMyCanSendNow").next().children("input").val("是");
+                }
                 if (ws.fileIsSynchronization) {
                     $("#wsFileIsSynchronization").text("是");
                 } else {
@@ -42,7 +49,24 @@
                     $("#dzjzFileIsSynchronization").text("否");
                 }
 
+                if (ws.fileIsSynchronizationNow) {
+                    $("#wsFileIsSynchronizationNow").text("是");
+                    $("#wsFileIsSynchronizationNow").next().children("input").val("关闭");
+                } else {
+                    $("#wsFileIsSynchronizationNow").text("否");
+                    $("#wsFileIsSynchronizationNow").next().children("input").val("开启");
 
+                }
+                if (dzjz.fileIsSynchronizationNow) {
+                    $("#dzjzFileIsSynchronizationNow").text("是");
+                    $("#dzjzFileIsSynchronizationNow").next().children("input").val("关闭");
+                } else {
+                    $("#dzjzFileIsSynchronizationNow").text("否");
+                    $("#dzjzFileIsSynchronizationNow").next().children("input").val("开启");
+                }
+
+                $("#wsManualAynchNum").text(ws.manualAynchNum);
+                $("#dzjzManualAynchNum").text(dzjz.manualAynchNum);
                 $("#wsNoFileNum").text(ws.noFileNum);
                 $("#dzjzNoFileNum").text(dzjz.noFileNum);
                 $("#wsTbNum").text(ws.fileNum);
@@ -199,7 +223,7 @@
 
         function startFileTb(isWs, el) {
             // $(el).hide();
-            $(el).parent().html("<A href='/index.html'  target='_blank' style='cursor: pointer'>查看详情</A>");
+            // $(el).parent().html("<A href='/index.html'  target='_blank' style='cursor: pointer'>查看详情</A>");
             var startTime = isWs ? $("#wsStartTime").val() : $("#dzjzStartTime").val();
             var endTime = isWs ? $("#wsEndTime").val() : $("#dzjzEndTime").val();
 
@@ -222,6 +246,23 @@
             })
         }
 
+        function isMyCanSendNow(el) {
+            var isMyCanSendNow = (el.value == '是' ? true : false);
+            $.post("/myReceive/isMyCanSendNow", {"isMyCanSendNow": isMyCanSendNow}, function (result) {
+                if (result.state == 0) {
+                    if (el.value == '是') {
+                        $(el).parent().prev().text('是');
+                        el.value = '否';
+                    } else {
+                        $(el).parent().prev().text('否');
+                        el.value = '是';
+                    }
+                    alert(result.data);
+                } else {
+                    alert(result.message);
+                }
+            })
+        }
 
         function openReceiveNow(isWs, el) {
             $.post("/myReceive/updateFileSynchronizationNow", {"isWs": isWs}, function (result) {
@@ -330,33 +371,55 @@
                 <td id="dzjzScan"><input type="button" value="确定" onclick="scanDownload('d',this)"></td>
                 <td>&nbsp;</td>
             </tr>
-            <!--<tr>
-                  <th>文书实时同步(关闭/开启)</th>
-                  <td id="wsFileIsSynchronizationNow"></td>
-                  <td><input type="button" value="开启" onclick="openReceiveNow(true,this)"></td>
-                  <th>电子卷宗实时同步(关闭/开启)</th>
-                  <td id="dzjzFileIsSynchronizationNow"></td>
-                  <td><input type="button" value="开启" onclick="openReceiveNow(false,this)"></td>
-              </tr>-->
+            <tr>
+                <th>是否监听新文件更新<font color="red">(*不要更改)</font></th>
+                <td id="isMyCanSendNow"></td>
+                <td align="left" colspan="4">
+                    <input type="button" value="是" onclick="isMyCanSendNow(this)">
+                </td>
+            </tr>
+            <tr>
+                <th>文书实时同步(关闭/开启)</th>
+                <td id="wsFileIsSynchronizationNow"></td>
+                <td><input type="button" value="开启" onclick="openReceiveNow(true,this)"></td>
+                <th>电子卷宗实时同步(关闭/开启)</th>
+                <td id="dzjzFileIsSynchronizationNow"></td>
+                <td><input type="button" value="开启" onclick="openReceiveNow(false,this)"></td>
+            </tr>
             <tr>
                 <th>文书是否在同步</th>
                 <td colspan="2" id="wsFileIsSynchronization"></td>
                 <th>电子卷宗否在同步</th>
                 <td colspan="2" id="dzjzFileIsSynchronization"></td>
             </tr>
-            <!--            <tr>
-                            <th>文书同步数量</th>
-                            <td id="wsTbNum" colspan="2"></td>
-                            <th>电子卷宗同步数量</th>
-                            <td id="dzjzTbNum" colspan="2"></td>
-                        </tr>-->
+            <tr>
+                <th>文书最新任务文件数</th>
+                <td id="wsManualAynchNum" colspan="2"></td>
+                <th>电子卷宗最新任务文件数</th>
+                <td id="dzjzManualAynchNum" colspan="2"></td>
+            </tr>
+            <tr>
+                <th>文书已处理数量</th>
+                <td id="wsTbNum" colspan="2"></td>
+                <th>电子卷宗已处理数量</th>
+                <td id="dzjzTbNum" colspan="2"></td>
+            </tr>
+            <tr>
+                <th>文书未找到文件数量</th>
+                <td id="wsNoFileNum"></td>
+                <td><input type="button" value="再次查找" onclick="findNoFile(true)"></td>
+                <th>电子卷宗未找到数量</th>
+                <td id="dzjzNoFileNum"></td>
+                <td><input type="button" value="再次查找" onclick="findNoFile(false)"></td>
+            </tr>
+
             <tr>
                 <th>文书初始化同步起始时间(文书创建时间)</th>
                 <td width="12%"><input type="text" id="wsStartTime" placeholder="请选择时间"></td>
-                <td rowspan="2" width="15%" style="color: red;">*首次全量初始化时不要输时间；<br>时间条件用于增补特定时段文件。</td>
+                <td rowspan="2" width="15%" style="color: red;">*首次全量初始化时不要填时间；<br>时间条件常用于增补特定时段文件。</td>
                 <th>电子卷宗初始化同步起始时间(卷宗创建时间)</th>
                 <td width="12%"><input type="text" id="dzjzStartTime" placeholder="请选择时间"></td>
-                <td rowspan="2" style="color: red">*首次全量初始化时不要输时间；<br>时间条件用于增补特定时段文件。</td>
+                <td rowspan="2" style="color: red">*首次全量初始化时不要填时间；<br>时间条件常用于增补特定时段文件。</td>
             </tr>
             <tr>
 
