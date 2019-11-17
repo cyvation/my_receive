@@ -54,34 +54,35 @@
                     $("#dzjzIsDecrypt").text("否");
                 }
 
-                if (ws.fileIsSynchronization) {
-                    $("#wsFileIsSynchronization").text("是");
+                //手动任务是否在执行
+                if (ws.fileSynchState) {
+                    $("#wsFileSynchState").text("是");
                 } else {
-                    $("#wsFileIsSynchronization").text("否");
+                    $("#wsFileSynchState").text("否");
 
                 }
-                if (dzjz.fileIsSynchronization) {
-                    $("#dzjzFileIsSynchronization").text("是");
+                if (dzjz.fileSynchState) {
+                    $("#dzjzFileSynchState").text("是");
                 } else {
-                    $("#dzjzFileIsSynchronization").text("否");
+                    $("#dzjzFileSynchState").text("否");
                 }
-                //是否监测新文件实时更新
+                //是否可监测新文件实时更新
                 if (result.isMyCanSendNow) {
                     $("#isMyCanSendNow").text("是");
                 } else {
                     $("#isMyCanSendNow").text("否");
                 }
-
-                if (ws.fileIsSynchronizationNow) {
-                    $("#wsFileIsSynchronizationNow").text("已开启");
+                //实时监听状态
+                if (ws.fileSynchronousSwitch) {
+                    $("#wsFileSynchronousSwitch").text("已开启");
                 } else {
-                    $("#wsFileIsSynchronizationNow").text("已关闭");
+                    $("#wsFileSynchronousSwitch").text("已关闭");
 
                 }
-                if (dzjz.fileIsSynchronizationNow) {
-                    $("#dzjzFileIsSynchronizationNow").text("已开启");
+                if (dzjz.fileSynchronousSwitch) {
+                    $("#dzjzFileSynchronousSwitch").text("已开启");
                 } else {
-                    $("#dzjzFileIsSynchronizationNow").text("已关闭");
+                    $("#dzjzFileSynchronousSwitch").text("已关闭");
                 }
                 $("#wsNoFileNum").text(ws.noFileNum);
                 $("#dzjzNoFileNum").text(dzjz.noFileNum);
@@ -107,14 +108,14 @@
 
             count++;
             //去掉定时器的方法
-            if (count == (12*3)) {//3分钟
+            if (count == (20*3)) {//3分钟
                 window.clearInterval(t1);
                 alert("实时刷新暂停，可刷新页面再次启用");
                 window.location.reload();
             }
         }
 
-        var t1=window.setInterval(getInfo, 1000*5);
+        var t1=window.setInterval(getInfo, 1000*3);
 
 
         $(document).ready(function(){
@@ -163,15 +164,15 @@
             </tr>
             <tr>
                 <th>文书实时同步(关闭/开启)</th>
-                <td colspan="2"  id="wsFileIsSynchronizationNow"></td>
+                <td colspan="2"  id="wsFileSynchronousSwitch"></td>
                 <th>电子卷宗实时同步(关闭/开启)</th>
-                <td colspan="2"  id="dzjzFileIsSynchronizationNow"></td>
+                <td colspan="2"  id="dzjzFileSynchronousSwitch"></td>
             </tr>
             <tr>
                 <th>文书是否在手动同步中</th>
-                <td colspan="2" id="wsFileIsSynchronization"></td>
+                <td colspan="2" id="wsFileSynchState"></td>
                 <th>电子卷宗是否在手动同步中</th>
-                <td colspan="2" id="dzjzFileIsSynchronization"></td>
+                <td colspan="2" id="dzjzFileSynchState"></td>
             </tr>
             <tr>
                 <th>文书最新任务文件数</th>

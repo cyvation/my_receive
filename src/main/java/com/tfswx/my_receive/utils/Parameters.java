@@ -20,10 +20,10 @@ public class Parameters {
     public static MyFileInfo dzjzFileInfo = null;
 
     //是否能开启实时同步
-    public static Boolean isMyCanSendNow = false;
+    public static Boolean isMyCanSendNow = true;
 
-    //是否能进行实时同步
-    public static Boolean isCanSendNow = false;
+    //是否正同步SJFH_FILE_NEWST数据
+    public static Boolean newSyncState = false;
 
     //是否可以进行解密操作
     public static Boolean canDecrypt = false;

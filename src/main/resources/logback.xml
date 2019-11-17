@@ -33,9 +33,9 @@
             <!--日志的存档名-->
             <fileNamePattern>logs/receive_info_%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <!-- each file should be at most 100MB, keep 60 days worth of history, but at most 20GB -->
-            <maxFileSize>2MB</maxFileSize>
-            <maxHistory>3</maxHistory>
-            <totalSizeCap>6MB</totalSizeCap>
+            <maxFileSize>5MB</maxFileSize>
+            <maxHistory>2</maxHistory>
+            <totalSizeCap>10MB</totalSizeCap>
             <cleanHistoryOnStart>true</cleanHistoryOnStart>
         </rollingPolicy>
     </appender>
@@ -54,9 +54,9 @@
             <!-- rollover daily -->
             <fileNamePattern>logs/receive_warn_%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <!-- each file should be at most 100MB, keep 60 days worth of history, but at most 20GB -->
-            <maxFileSize>2MB</maxFileSize>
+            <maxFileSize>5MB</maxFileSize>
             <maxHistory>20</maxHistory>
-            <totalSizeCap>2MB</totalSizeCap>
+            <totalSizeCap>5MB</totalSizeCap>
             <cleanHistoryOnStart>true</cleanHistoryOnStart>
         </rollingPolicy>
     </appender>

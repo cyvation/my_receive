@@ -6,6 +6,10 @@
     url: jdbc:oracle:thin:@141.18.128.37:1521:tyyw
     username: tyyw
     password: tyyw
+    #邢台
+    url: jdbc:oracle:thin:@10.113.218.5:1521:tyyw
+    username: tyyw
+    password: tyyw
 
 sendIp:
   wsSendIp: 10.13.10.207

@@ -21,7 +21,6 @@ public class MyReceiveApplication {
         new KillPort().check(9528);
 
         SpringApplication.run(MyReceiveApplication.class, args);
-        System.out.println("文书卷宗同步（目的端）启动成功！\n" +
-                "配置信息查看访问： http://" + getIpAddress() + ":9528");
+
     }
 }

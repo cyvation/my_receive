@@ -23,9 +23,11 @@ public class MyFileInfo {
 
     Boolean fileIsDecrypt;
 
-    Boolean fileIsSynchronization;
+    //手动同步执行状态
+    Boolean fileSynchState;
 
-    Boolean fileIsSynchronizationNow;
+    //实时监测新文件更新状态
+    Boolean fileSynchronousSwitch;
 
     Integer year;
 
@@ -47,12 +49,12 @@ public class MyFileInfo {
         this.isWs = isWs;
         this.filePathTitle = filePathTitle;
         this.fileIsDecrypt = false;
-        this.fileIsSynchronization = false;
+        this.fileSynchState = false;
         this.year = 0;
         this.manualAynchNum = 0;
         this.fileNum = 0;
         this.noFileNum = 0;
-        this.fileIsSynchronizationNow = true;
+        this.fileSynchronousSwitch = true;
         this.fileType = fileType;
     }
 
@@ -76,20 +78,20 @@ public class MyFileInfo {
         return endDate;
     }
 
-    public Boolean getFileIsSynchronization() {
-        return fileIsSynchronization;
+    public Boolean getFileSynchState() {
+        return fileSynchState;
     }
 
-    public void setFileIsSynchronization(Boolean fileIsSynchronization) {
-        this.fileIsSynchronization = fileIsSynchronization;
+    public void setFileSynchState(Boolean fileSynchState) {
+        this.fileSynchState = fileSynchState;
     }
 
-    public Boolean getFileIsSynchronizationNow() {
-        return fileIsSynchronizationNow;
+    public Boolean getFileSynchronousSwitch() {
+        return fileSynchronousSwitch;
     }
 
-    public void setFileIsSynchronizationNow(Boolean fileIsSynchronizationNow) {
-        this.fileIsSynchronizationNow = fileIsSynchronizationNow;
+    public void setFileSynchronousSwitch(Boolean fileSynchronousSwitch) {
+        this.fileSynchronousSwitch = fileSynchronousSwitch;
     }
 
     public void setEndDate(Date endDate) {

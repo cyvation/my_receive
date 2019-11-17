@@ -42,11 +42,11 @@ public interface MyReceiveService {
     JsonResult updateSendIP(Boolean isWs , String sendIP);
 
     /**
-     * 修改文件是否实时同步，会判断文件是否正在实时同步，是的话就停，不是就开
+     * 修改文件同步开关，会判断文件是否正在实时同步，是的话就停，不是就开
      * @param isWs 是否是文书
      * @return
      */
-    JsonResult updateFileSynchronizationNow(Boolean isWs);
+    JsonResult updateFileSynchronousSwitch(Boolean isWs);
 
     /**
      * 开始文件同步（手动进行文件同步，开始时间和结束时间都为空时，进行2013至今的所有数据同步，按年份进行一一同步）

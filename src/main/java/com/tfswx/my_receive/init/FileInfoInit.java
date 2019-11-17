@@ -19,6 +19,8 @@ import org.springframework.util.StringUtils;
 import java.io.*;
 import java.util.ArrayList;
 
+import static com.tfswx.my_receive.utils.FileUtil.getIpAddress;
+
 /**
  * 配置初始化类，用于找寻配置和创建配置
  */
@@ -61,6 +63,10 @@ public class FileInfoInit implements CommandLineRunner {
         Parameters.START_YEAR = startYear;
         Parameters.PAGE_SIZE = pageSize;
         Parameters.SQL_MAX_LINES = sqlMaxLines;
+
+        System.out.println("文书卷宗同步（目的端）启动成功！\n" +
+                "配置信息查看访问： http://" + getIpAddress() + ":9528");
+
         //获取当前目录，并找到根目录，创建各类文件和文件夹
         getRootPath(ClassUtils.getDefaultClassLoader().getResource("").getPath());
     }
@@ -153,9 +159,8 @@ public class FileInfoInit implements CommandLineRunner {
         }
 
         Parameters.isMyCanSendNow = Boolean.parseBoolean(getStrValue(Parameters.propertiesUtil.getValue("isMyCanSendNow")));
-
-        if (Parameters.isMyCanSendNow && !Parameters.isCanSendNow) {
-            Parameters.isCanSendNow = true;
+        if (Parameters.isMyCanSendNow && !Parameters.newSyncState) {//WARN 看不懂这判断意图
+            Parameters.newSyncState = true;
         }
 
         //存放文书信息
@@ -169,8 +174,8 @@ public class FileInfoInit implements CommandLineRunner {
         Parameters.wsFileInfo.setFileType(getStrValue(Parameters.propertiesUtil.getValue(WS + "FileType")));
         Parameters.wsFileInfo.setFileIsDecrypt(Boolean.parseBoolean(getStrValue(Parameters.propertiesUtil.getValue(WS + "FileIsDecrypt"))));
         Parameters.wsFileInfo.setYear(Integer.parseInt(getStrValue(Parameters.propertiesUtil.getValue(WS + "Year"))));
-        Parameters.wsFileInfo.setFileIsSynchronizationNow(Boolean.parseBoolean(getStrValue(Parameters.propertiesUtil.getValue(WS + "FileIsSynchronizationNow"))));
-        Parameters.wsFileInfo.setFileIsSynchronization(Boolean.parseBoolean(getStrValue(Parameters.propertiesUtil.getValue(WS + "FileIsSynchronization"))));
+        Parameters.wsFileInfo.setFileSynchronousSwitch(Boolean.parseBoolean(getStrValue(Parameters.propertiesUtil.getValue(WS + "FileSynchronousSwitch"))));
+        Parameters.wsFileInfo.setFileSynchState(Boolean.parseBoolean(getStrValue(Parameters.propertiesUtil.getValue(WS + "FileSynchState"))));
         Parameters.wsFileInfo.setManualAynchNum(Integer.parseInt(getStrValue(Parameters.propertiesUtil.getValue(WS + "ManualAynchNum"))));
         Parameters.wsFileInfo.setFileNum(Integer.parseInt(getStrValue(Parameters.propertiesUtil.getValue(WS + "FileNum"))));
         Parameters.wsFileInfo.setNoFileNum(Integer.parseInt(getStrValue(Parameters.propertiesUtil.getValue(WS + "NoFileNum"))));
@@ -185,8 +190,8 @@ public class FileInfoInit implements CommandLineRunner {
         Parameters.dzjzFileInfo.setFileType(getStrValue(Parameters.propertiesUtil.getValue(DZJZ + "FileType")));
         Parameters.dzjzFileInfo.setFileIsDecrypt(Boolean.parseBoolean(getStrValue(Parameters.propertiesUtil.getValue(DZJZ + "FileIsDecrypt"))));
         Parameters.dzjzFileInfo.setYear(Integer.parseInt(getStrValue(Parameters.propertiesUtil.getValue(DZJZ + "Year"))));
-        Parameters.dzjzFileInfo.setFileIsSynchronizationNow(Boolean.parseBoolean(getStrValue(Parameters.propertiesUtil.getValue(DZJZ + "FileIsSynchronizationNow"))));
-        Parameters.dzjzFileInfo.setFileIsSynchronization(Boolean.parseBoolean(getStrValue(Parameters.propertiesUtil.getValue(DZJZ + "FileIsSynchronization"))));
+        Parameters.dzjzFileInfo.setFileSynchronousSwitch(Boolean.parseBoolean(getStrValue(Parameters.propertiesUtil.getValue(DZJZ + "FileSynchronousSwitch"))));
+        Parameters.dzjzFileInfo.setFileSynchState(Boolean.parseBoolean(getStrValue(Parameters.propertiesUtil.getValue(DZJZ + "FileSynchState"))));
         Parameters.dzjzFileInfo.setManualAynchNum(Integer.parseInt(getStrValue(Parameters.propertiesUtil.getValue(DZJZ + "ManualAynchNum"))));
         Parameters.dzjzFileInfo.setFileNum(Integer.parseInt(getStrValue(Parameters.propertiesUtil.getValue(DZJZ + "FileNum"))));
         Parameters.dzjzFileInfo.setNoFileNum(Integer.parseInt(getStrValue(Parameters.propertiesUtil.getValue(DZJZ + "NoFileNum"))));
@@ -237,13 +242,13 @@ public class FileInfoInit implements CommandLineRunner {
         ////Parameters.propertiesUtil.setComment(WS+"FileIsDecrypt","文书是否解密");
         Parameters.propertiesUtil.setProperty(WS + "Year", String.valueOf(Parameters.wsFileInfo.getYear()));
         //Parameters.propertiesUtil.setComment(WS+"Year","文书当前同步年份");
-        Parameters.propertiesUtil.setProperty(WS + "FileIsSynchronizationNow", String.valueOf(Parameters.wsFileInfo.getFileIsSynchronizationNow()));
-        //Parameters.propertiesUtil.setComment(WS+"FileIsSynchronizationNow","文书是否实时同步");
-        Parameters.propertiesUtil.setProperty(WS + "FileIsSynchronization", String.valueOf(Parameters.wsFileInfo.getFileIsSynchronization()));
-        //Parameters.propertiesUtil.setComment(WS+"FileIsSynchronization","文书是否正在同步");
+        Parameters.propertiesUtil.setProperty(WS + "FileSynchronousSwitch", String.valueOf(Parameters.wsFileInfo.getFileSynchronousSwitch()));
+        //Parameters.propertiesUtil.setComment(WS+"FileSynchronousSwitch","文书同步开关");
+        Parameters.propertiesUtil.setProperty(WS + "FileSynchState", String.valueOf(Parameters.wsFileInfo.getFileSynchState()));
+        //Parameters.propertiesUtil.setComment(WS+"FileSynchState","文书是否正在同步");
 
         Parameters.propertiesUtil.setProperty(WS + "ManualAynchNum", String.valueOf(Parameters.wsFileInfo.getManualAynchNum()));
-        //Parameters.propertiesUtil.setComment(WS+"FileIsSynchronization","文书手动同步任务的总数");
+        //Parameters.propertiesUtil.setComment(WS+"FileSynchState","文书手动同步任务的总数");
 
         Parameters.propertiesUtil.setProperty(WS + "FileNum", String.valueOf(Parameters.wsFileInfo.getFileNum()));
         //Parameters.propertiesUtil.setComment(WS+"FileNum","文书同步数量");
@@ -271,13 +276,13 @@ public class FileInfoInit implements CommandLineRunner {
         //Parameters.propertiesUtil.setComment(DZJZ+"FileIsDecrypt","电子卷宗是否解密");
         Parameters.propertiesUtil.setProperty(DZJZ + "Year", String.valueOf(Parameters.dzjzFileInfo.getYear()));
         //Parameters.propertiesUtil.setComment(DZJZ+"Year","电子卷宗当前同步年份");
-        Parameters.propertiesUtil.setProperty(DZJZ + "FileIsSynchronizationNow", String.valueOf(Parameters.dzjzFileInfo.getFileIsSynchronizationNow()));
-        //Parameters.propertiesUtil.setComment(DZJZ+"FileIsSynchronizationNow","电子卷宗是否实时同步");
-        Parameters.propertiesUtil.setProperty(DZJZ + "FileIsSynchronization", String.valueOf(Parameters.dzjzFileInfo.getFileIsSynchronization()));
-        //Parameters.propertiesUtil.setComment(DZJZ+"FileIsSynchronization","电子卷宗是否正在同步");
+        Parameters.propertiesUtil.setProperty(DZJZ + "FileSynchronousSwitch", String.valueOf(Parameters.dzjzFileInfo.getFileSynchronousSwitch()));
+        //Parameters.propertiesUtil.setComment(DZJZ+"FileSynchronousSwitch","电子卷宗同步开关");
+        Parameters.propertiesUtil.setProperty(DZJZ + "FileSynchState", String.valueOf(Parameters.dzjzFileInfo.getFileSynchState()));
+        //Parameters.propertiesUtil.setComment(DZJZ+"FileSynchState","电子卷宗是否正在同步");
 
         Parameters.propertiesUtil.setProperty(DZJZ + "ManualAynchNum", String.valueOf(Parameters.dzjzFileInfo.getManualAynchNum()));
-        //Parameters.propertiesUtil.setComment(DZJZ+"FileIsSynchronization","电子卷宗手动同步任务的总数");
+        //Parameters.propertiesUtil.setComment(DZJZ+"FileSynchState","电子卷宗手动同步任务的总数");
 
         Parameters.propertiesUtil.setProperty(DZJZ + "FileNum", String.valueOf(Parameters.dzjzFileInfo.getFileNum()));
         //Parameters.propertiesUtil.setComment(DZJZ+"FileNum","电子卷宗同步数量");

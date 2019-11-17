@@ -82,15 +82,15 @@ public class MyReceiveController {
     }
 
     /**
-     * 修改文件是否实时同步，会判断文件是否正在实时同步，是的话就停，不是就开
+     * 修改文件同步开关，会判断文件是否正在实时同步，是的话就停，不是就开
      * @param isWs 是否是文书
      * @return
      */
-    @RequestMapping("/updateFileSynchronizationNow")
+    @RequestMapping("/updateFileSynchronousSwitch")
     @ResponseBody
-    public JsonResult updateFileSynchronizationNow(Boolean isWs) {
-        log.info("修改文件是否实时同步");
-        return myReceiveService.updateFileSynchronizationNow(isWs);
+    public JsonResult updateFileSynchronousSwitch(Boolean isWs) {
+        log.info("修改文件同步开关");
+        return myReceiveService.updateFileSynchronousSwitch(isWs);
     }
 
     /**
@@ -111,7 +111,7 @@ public class MyReceiveController {
      * 查找所有未找到的文件，有就进行同步
      */
     @RequestMapping("/findNoFile")
-    public void findNoFile() {
+    public void findNoFile(Boolean isWs) {
         log.info("查找所有未找到的文件，有就进行同步");
         myReceiveService.findNoFile99();
     }

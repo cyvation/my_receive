@@ -30,16 +30,16 @@
                     $("#dzjzIsDecrypt").text("否");
                 }
 
-                if (ws.fileIsSynchronization) {
-                    $("#wsFileIsSynchronization").text("是");
+                if (ws.fileSynchState) {
+                    $("#wsFileSynchState").text("是");
                 } else {
-                    $("#wsFileIsSynchronization").text("否");
+                    $("#wsFileSynchState").text("否");
 
                 }
-                if (dzjz.fileIsSynchronization) {
-                    $("#dzjzFileIsSynchronization").text("是");
+                if (dzjz.fileSynchState) {
+                    $("#dzjzFileSynchState").text("是");
                 } else {
-                    $("#dzjzFileIsSynchronization").text("否");
+                    $("#dzjzFileSynchState").text("否");
                 }
 
                 $("#wsNoFileNum").text(ws.noFileNum);
@@ -203,9 +203,9 @@
             var endTime = isWs ? $("#wsEndTime").val() : $("#dzjzEndTime").val();
 
             if (isWs) {
-                $("#wsFileIsSynchronization").text("是");
+                $("#wsFileSynchState").text("是");
             } else {
-                $("#dzjzFileIsSynchronization").text("是");
+                $("#dzjzFileSynchState").text("是");
             }
 
             $.post("/myReceive/startFileSynchronization", {
@@ -223,7 +223,7 @@
 
 
         function openReceiveNow(isWs, el) {
-            $.post("/myReceive/updateFileSynchronizationNow", {"isWs": isWs}, function (result) {
+            $.post("/myReceive/updateFileSynchronousSwitch", {"isWs": isWs}, function (result) {
                 if (result.state == 0) {
                     if (el.value == '开启') {
                         $(el).parent().prev().text('是');
@@ -331,17 +331,17 @@
             </tr>
             <!--<tr>
                   <th>文书实时同步(关闭/开启)</th>
-                  <td id="wsFileIsSynchronizationNow"></td>
+                  <td id="wsFileSynchronousSwitch"></td>
                   <td><input type="button" value="开启" onclick="openReceiveNow(true,this)"></td>
                   <th>电子卷宗实时同步(关闭/开启)</th>
-                  <td id="dzjzFileIsSynchronizationNow"></td>
+                  <td id="dzjzFileSynchronousSwitch"></td>
                   <td><input type="button" value="开启" onclick="openReceiveNow(false,this)"></td>
               </tr>-->
             <tr>
                 <th>文书是否在同步</th>
-                <td colspan="2" id="wsFileIsSynchronization"></td>
+                <td colspan="2" id="wsFileSynchState"></td>
                 <th>电子卷宗否在同步</th>
-                <td colspan="2" id="dzjzFileIsSynchronization"></td>
+                <td colspan="2" id="dzjzFileSynchState"></td>
             </tr>
             <!--            <tr>
                             <th>文书同步数量</th>
@@ -368,11 +368,11 @@
             </tr>
             <tr>
                 <th>文书开始同步</th>
-                <td colspan="2"><input type="button" value="开启同步" id="startFileTb_ws"
+                <td colspan="2"><input type="button" value="开始同步" id="startFileTb_ws"
                                        onclick="startFileTb(true,this)">
                 </td>
                 <th>电子卷宗开始同步</th>
-                <td colspan="2"><input type="button" value="开启同步" id="startFileTb_dzjz"
+                <td colspan="2"><input type="button" value="开始同步" id="startFileTb_dzjz"
                                        onclick="startFileTb(false,this)">
                 </td>
             </tr>
