@@ -144,6 +144,7 @@
         (
           id   varchar2(32) default sys_guid(),
           filePath varchar2(500),
+          dwbm char(6),
           type CHAR(4),
           fileType char(1),
           zhxgsj date,
@@ -155,11 +156,12 @@
      CREATE OR REPLACE TRIGGER file_dzjz_update
     AFTER INSERT OR UPDATE ON yx_dzjz_jzmlwj
     FOR EACH ROW
+      /**文书触发器（当YX_WS_AJJZWJ 表中添加或者修改文书后，将会添加到sjfh_file_newest表，然后软件会处理表中数据）*/
     DECLARE
     MYTYPE varchar2(100);
     BEGIN
      select ajlb_bm into MYTYPE from tyyw_gg_ajjbxx where bmsah = :NEW.BMSAH;
-     INSERT INTO sjfh_file_newest(filePath,TYPE,fileType,ZHXGSJ,CJSJ) VALUES (:NEW.wjlj||'\'||:NEW.wjmc||:NEW.wjhz||'.encry',MYTYPE,'d',:NEW.ZHXGSJ,:NEW.CJSJ);
+     INSERT INTO sjfh_file_newest(filePath,DWBM,TYPE,fileType,ZHXGSJ,CJSJ) VALUES (:NEW.wjlj||'\'||:NEW.wjmc||:NEW.wjhz||'.encry',:NEW.DWBM,MYTYPE,'d',:NEW.ZHXGSJ,:NEW.CJSJ);
     END;
     </select>
 
@@ -167,11 +169,12 @@
         CREATE OR REPLACE TRIGGER file_ws_update
         AFTER INSERT OR UPDATE ON YX_WS_AJJZWJ
         FOR EACH ROW
+         /**电子卷宗触发器（当yx_dzjz_jzmlwj表中添加或者修改电子卷宗后，将会添加到sjfh_file_newest表，然后软件会处理表中数据）*/
         DECLARE
          MYTYPE varchar2(100);
         BEGIN
          select ajlb_bm into MYTYPE from tyyw_gg_ajjbxx where bmsah = :NEW.BMSAH;
-         INSERT INTO sjfh_file_newest(filePath,TYPE,fileType,ZHXGSJ,CJSJ) VALUES (:NEW.WSCFLJ,MYTYPE,'w',:NEW.ZHXGSJ,:NEW.CJSJ);
+         INSERT INTO sjfh_file_newest(filePath,DWBM,TYPE,fileType,ZHXGSJ,CJSJ) VALUES (:NEW.WSCFLJ,:NEW.DWBM,MYTYPE,'w',:NEW.ZHXGSJ,:NEW.CJSJ);
         END;
     </select>
 
@@ -180,6 +183,7 @@
         (
           id       VARCHAR2(32) default sys_guid() not null,
           filePath     VARCHAR2(500),
+          dwbm char(6),
           type     CHAR(4),
           fileType CHAR(1),
           zhxgsj   DATE,

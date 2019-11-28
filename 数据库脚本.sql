@@ -48,9 +48,9 @@ comment on column SJFH_FILE_NOFILE.ID
 comment on column SJFH_FILE_NOFILE.FILEPATH
     is '文件路径';
 comment on column SJFH_FILE_NOFILE.TYPE
-    is '文件类型d：电子卷宗；w：文书';
+    is '案件类别'; 
 comment on column SJFH_FILE_NOFILE.FILETYPE
-    is '案件类别';
+   is '文件类型d：电子卷宗；w：文书';
 comment on column SJFH_FILE_NOFILE.ZHXGSJ
     is '文件最后修改时间';
 comment on column SJFH_FILE_NOFILE.CJSJ
