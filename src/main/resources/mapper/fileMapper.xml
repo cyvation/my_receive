@@ -4,6 +4,7 @@
     <resultMap id="resultMap" type="com.tfswx.my_receive.entity.MyFile">
         <result column="ID" jdbcType="VARCHAR" property="id"/>
         <result column="FILEPATH" jdbcType="VARCHAR" property="filePath"/>
+        <result column="DWBM" jdbcType="VARCHAR" property="dwbm"/>
         <result column="FILETYPE" jdbcType="VARCHAR" property="fileType"/>
 <!--        <result column="CJSJ" jdbcType="DATE" property="cjsj"/>-->
         <result column="TYPE" jdbcType="VARCHAR" property="type"/>
@@ -31,6 +32,7 @@
     <!--     查询文书文件-->
     <select id="getWsFilePathes" parameterType="map" resultMap="resultMap">
        SELECT f.wscflj filePath,
+              f.DWBM,
               f.zhxgsj,
               f.cjsj,
               'w' fileType,
@@ -72,6 +74,7 @@
     <!--    查询卷宗文件-->
     <select id="getDzjzFilePathes" parameterType="map" resultMap="resultMap">
         SELECT f.wjlj || '\' || f.wjmc || f.wjhz || '.encry' filePath,
+               f.DWBM,
                f.zhxgsj,
                f.cjsj,
                'd' fileType,
@@ -99,7 +102,7 @@
     </select>
 
     <select id="getNewest" parameterType="java.util.Map" resultMap="resultMap">
-        select id,filePath,type,fileType,zhxgsj,cjsj from sjfh_file_newest where  ROWNUM &lt;= 5000
+        select id,filePath,dwbm,type,fileType,zhxgsj,cjsj from sjfh_file_newest where  ROWNUM &lt;= 5000
     </select>
 
     <delete id="deleteNewestById" parameterType="java.lang.String">
@@ -107,7 +110,7 @@
     </delete>
 
     <insert id="insertNoFile" parameterType="com.tfswx.my_receive.entity.MyFile">
-        insert into SJFH_FILE_NOFILE(filePath,type,fileType,zhxgsj,cjsj ) VALUES (#{filePath},#{type},#{fileType},#{zhxgsj},#{cjsj})
+        insert into SJFH_FILE_NOFILE(filePath,dwbm,type,fileType,zhxgsj,cjsj ) VALUES (#{filePath},#{dwbm},#{type},#{fileType},#{zhxgsj},#{cjsj})
     </insert>
 
     <insert id="updateNoFileById" parameterType="com.tfswx.my_receive.entity.MyFile">
@@ -119,7 +122,7 @@
     </select>
 
     <select id="getNoFileByFindTime" resultMap="resultMap" parameterType="java.lang.Integer">
-        select id,filePath,type,fileType,zhxgsj,cjsj,findTime from SJFH_FILE_NOFILE WHERE FINDTIME &lt;= #{findTime} AND ROWNUM &lt;= 5000
+        select id,filePath,dwbm,type,fileType,zhxgsj,cjsj,findTime from SJFH_FILE_NOFILE WHERE FINDTIME &lt;= #{findTime} AND ROWNUM &lt;= 5000
     </select>
 
     <delete id="deleteNoFileById" parameterType="java.lang.String">
