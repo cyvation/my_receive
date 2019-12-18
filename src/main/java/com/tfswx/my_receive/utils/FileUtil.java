@@ -1,12 +1,16 @@
 package com.tfswx.my_receive.utils;
 
+
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.nio.channels.FileChannel;
 import java.util.Enumeration;
-
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 /**
  * 用于简单的文件和文件夹创建
  */
@@ -74,5 +78,23 @@ public class FileUtil {
             System.err.println("IP地址获取失败" + e.toString());
         }
         return "";
+    }
+
+    public static void copyFile(String source, String dest) {
+        FileChannel inputChannel = null;
+        FileChannel outputChannel = null;
+        try {
+
+                inputChannel = new FileInputStream(source).getChannel();
+                outputChannel = new FileOutputStream(dest).getChannel();
+                outputChannel.transferFrom(inputChannel, 0, inputChannel.size());
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.err.println("文件复制出错：" + e.toString());
+            }
+         finally {
+            IOUtils.closeQuietly(inputChannel);
+            IOUtils.closeQuietly(outputChannel);
+        }
     }
 }

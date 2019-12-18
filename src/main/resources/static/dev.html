@@ -98,7 +98,7 @@
                     chageThis.children().val(text);
                     break;
                 case 'dwbm':
-                    chageThis.append('<textarea type="text" style="width: 100%" placeholder="不配置意味同步HS目的端库里所有，配置格式：510000,510001 或 510000-510001"></textarea>');
+                    chageThis.append('<textarea type="text" style="width: 100%" placeholder="不配置意味同步HS目的端库里所有，配置格式：5109**(推荐) 或 510100-510199 或 510000,510001"></textarea>');
                     chageThis.children().text(text);
                     break;
                 case 'typeRestriction':
@@ -413,19 +413,19 @@
                 <td><input type="button" value="开启" onclick="openReceiveNow(false,this)"></td>
             </tr>
             <tr>
-                <th>文书初始化同步起始时间(文书创建时间)</th>
+                <th>文书初始化同步起始时间(文书修改时间)</th>
                 <td width="12%"><input type="text" id="wsStartTime" placeholder="请选择时间"></td>
                 <td rowspan="2" width="15%" style="color: red;">*首次全量初始化时不要填时间；<br>时间条件常用于增补特定时段文件。</td>
-                <th>电子卷宗初始化同步起始时间(卷宗创建时间)</th>
+                <th>电子卷宗初始化同步起始时间(卷宗修改时间)</th>
                 <td width="12%"><input type="text" id="dzjzStartTime" placeholder="请选择时间"></td>
                 <td rowspan="2" style="color: red">*首次全量初始化时不要填时间；<br>时间条件常用于增补特定时段文件。</td>
             </tr>
             <tr>
 
-                <th>文书初始化同步截止时间(文书创建时间)</th>
+                <th>文书初始化同步截止时间(文书修改时间)</th>
                 <td colspan="1"><input type="text" id="wsEndTime" placeholder="请选择时间"></td>
                 <!--                <td colspan="1">2</td>-->
-                <th>电子卷宗初始化同步截止时间(卷宗创建时间)</th>
+                <th>电子卷宗初始化同步截止时间(卷宗修改时间)</th>
                 <td colspan="1"><input type="text" id="dzjzEndTime" placeholder="请选择时间"></td>
                 <!--                <td colspan="1">4</td>-->
             </tr>

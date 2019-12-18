@@ -104,12 +104,12 @@ public interface MyReceiveService {
      */
     void createDownloadTable();
 
-    void createWsTrigger();
+    void createWsTrigger(String dwbm);
 
     /**
      * 查找所有未找到的文件，有就进行同步
      */
-    void createDzjzTrigger();
+    void createDzjzTrigger(String dwbm);
 
     /**
      * 是否【能】进行实时同步

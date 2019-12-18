@@ -224,9 +224,11 @@ public class MyReceiveServiceImpl implements MyReceiveService {
     @Override
     public JsonResult updateDwbm(String dwbm) {
         //正则验证单位是否正确
-        if ("".equals(dwbm) || dwbm.matches("^\\d{6}||\\d{6}([,]\\d{6})+||\\d{6}[-]\\d{6}$")) {
+        if ("".equals(dwbm) || dwbm.matches("^[0-9\\*]{6}||\\d{6}([,]\\d{6})+||\\d{6}[-]\\d{6}$")) {
             Parameters.dwbm = dwbm;
             Parameters.propertiesUtil.setProperty("dwbm", dwbm);
+            createWsTrigger(getDwbmSql(":NEW.DWBM",dwbm));
+            createDzjzTrigger(getDwbmSql(":NEW.DWBM",dwbm));
             return new JsonResult("修改成功");
         } else {
             return new JsonResult(JsonResult.ERROR, "单位编码格式有误");
@@ -496,7 +498,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
 
             for (MyFile myFile : fileList) {
                 myFileInfo.setRunDate(new Date());
-                myFileInfo.setStartDate(myFile.getCjsj());
+                myFileInfo.setStartDate(myFile.getZhxgsj());
                 updateProperties(myFileInfo, "StartDate", getStr4Date(myFileInfo.getStartDate()));
                 myFileInfo.setFileNum(myFileInfo.getFileNum() + 1);
                 //从源端下载文件
@@ -532,7 +534,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
             int notFindCount = myFileInfo.getIsWs() ? wsFileInfo.getNoFileNum() : dzjzFileInfo.getNoFileNum();
             myFileInfo.setNoFileNum(notFindCount);
 
-            finashSynchronization(myFileInfo);
+            finishSynchronization(myFileInfo);
             String synCountMsg = "--------------" + (myFileInfo.getIsWs() ? "文书" : "卷宗") + "同步结束-------------" + "\r\n" +
                     "******文件同步结束时间：" + getStr4Date(new Date()) + "******" + "\r\n" +
                     "******总共同步文件数量：" + myFileInfo.getFileNum() + "******" + "\r\n" + "\r\n";
@@ -547,7 +549,9 @@ public class MyReceiveServiceImpl implements MyReceiveService {
      * @return
      */
     public String getDwbmSql(String fied, String dwbm) {
-        if (dwbm.indexOf(",") != -1) {
+        if (dwbm.indexOf("*") != -1) {
+            return " " + fied + " LIKE '" + dwbm.replace("*","_") + "' ";
+        }else if (dwbm.indexOf(",") != -1) {
             return " " + fied + " IN (" + dwbm + ") ";
         } else if (dwbm.indexOf("-") != -1) {
             String[] dwbms = dwbm.split("-");
@@ -559,16 +563,16 @@ public class MyReceiveServiceImpl implements MyReceiveService {
         }
     }
 
-    public void finashSynchronization(MyFileInfo myFileInfo) {
+    public void finishSynchronization(MyFileInfo myFileInfo) {
         myFileInfo.setYear(0);
         myFileInfo.setStartDate(null);
         myFileInfo.setEndDate(null);
         myFileInfo.setFileSynchronousSwitch(true);
         myFileInfo.setFileSynchState(false);
         updatePropertiesTime(myFileInfo);
-        if (myFileInfo.getFileNum() > 0) {
+        /*if (myFileInfo.getFileNum() > 0) {
             updateProperties(myFileInfo, "FileNum", String.valueOf(myFileInfo.getFileNum()));
-        }
+        }*/
         if (myFileInfo.getNoFileNum() > 0) {
             updateProperties(myFileInfo, "NoFileNum", String.valueOf(myFileInfo.getNoFileNum()));
         }
@@ -685,23 +689,30 @@ public class MyReceiveServiceImpl implements MyReceiveService {
     }
 
     @Override
-    public void createWsTrigger() {
-        fileReceiveMapper.createWsTrigger();
+    public void createWsTrigger(String dwbm) {
+        HashMap map=new HashMap();
+        map.put("dwbm",dwbm);
+        fileReceiveMapper.createWsTrigger(map);
     }
 
     @Override
-    public void createDzjzTrigger() {
-        fileReceiveMapper.createDzjzTrigger();
+    public void createDzjzTrigger(String dwbm) {
+        HashMap map=new HashMap();
+        map.put("dwbm",dwbm);
+        fileReceiveMapper.createDzjzTrigger(map);
     }
 
 
     /**
-     * 实时更新方法，每3分进行数据检测
+     * 实时更新方法，每30秒进行数据检测
      */
-    @Scheduled(cron = "59 */3 * * * ?")
+    @Scheduled(cron = "*/30 * * * * ?")
     public void checkNews() {
         //判断是否可以进行同步和判断是否有文件可以被更新
-        if (Parameters.newSyncState && fileReceiveMapper.getNewestNum() > 0) {
+
+        Map<String, Object> map = new HashMap();
+        map.put("fdwbm", getDwbmSql("f.dwbm", Parameters.dwbm));
+        if (Parameters.newSyncState && fileReceiveMapper.getNewestNum(map) > 0) {
             log.info("执行文件更新实时检测任务");
             //设置是否可以进行同步为否
             Parameters.newSyncState = false;
@@ -715,7 +726,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
 //                fileReceiveMapper.deleteNewestByFileType(Parameters.dzjzFileInfo.getFileType());
 //            }
             //获取需要同步的文件
-            List<MyFile> fileList = fileReceiveMapper.getNewest();
+            List<MyFile> fileList = fileReceiveMapper.getNewest(map);
             log.info("检测发现新文件数量：" + fileList.size());
             //遍历文件并写入
             for (MyFile myFile : fileList) {
@@ -750,7 +761,11 @@ public class MyReceiveServiceImpl implements MyReceiveService {
         if ((!Parameters.wsFileInfo.getFileSynchronousSwitch()) || (!Parameters.dzjzFileInfo.getFileSynchronousSwitch())) {
             return;
         }
-        List<MyFile> fileList = fileReceiveMapper.getNoFileByFindTime(No_Find_Times);
+        Map<String, Object> map = new HashMap();
+        map.put("fdwbm", getDwbmSql("f.dwbm", Parameters.dwbm));
+        map.put("findTime",No_Find_Times);
+        map.put("pageSize",PAGE_SIZE);
+        List<MyFile> fileList = fileReceiveMapper.getNoFileByFindTime(map);
         if (fileList.size() == 0) {
             return;
         }
@@ -778,7 +793,11 @@ public class MyReceiveServiceImpl implements MyReceiveService {
     @Scheduled(cron = "0 30 21 */1 * ?")  //每天21:30执行一次定时任务
     public void writeNoFileDuplation() {
         //查找10次以内未找到的文件信息
-        List<MyFile> fileList = fileReceiveMapper.getNoFileByFindTime(No_Find_Times * 2);
+        Map<String, Object> map = new HashMap();
+        map.put("fdwbm", getDwbmSql("f.dwbm", Parameters.dwbm));
+        map.put("findTime",No_Find_Times * 2);
+        map.put("pageSize",PAGE_SIZE);
+        List<MyFile> fileList = fileReceiveMapper.getNoFileByFindTime(map);
         if (fileList.size() == 0) {
             return;
         }
@@ -806,7 +825,11 @@ public class MyReceiveServiceImpl implements MyReceiveService {
      * @param findTime 未找到次数
      */
     public void writeNoFileByTimes(Integer findTime) {
-        List<MyFile> fileList = fileReceiveMapper.getNoFileByFindTime(findTime);//TODO 分页查询的
+        Map<String, Object> map = new HashMap();
+        map.put("fdwbm", getDwbmSql("f.dwbm", Parameters.dwbm));
+        map.put("findTime",findTime);
+        map.put("pageSize",PAGE_SIZE);
+        List<MyFile> fileList = fileReceiveMapper.getNoFileByFindTime(map);//TODO 分页查询的
         log.info("未找到的文件数量为：" + fileList.size());
         if (fileList.size() == 0) {
             return;
@@ -866,11 +889,11 @@ public class MyReceiveServiceImpl implements MyReceiveService {
     public void writeNowReceiveFile3(MyFileInfo myFileInfo, byte[] fileByte, MyFile myFile) {
         //若文件不为空则写入并删除记录
         if (fileByte != null && fileByte.length != 0) {
-            log.info(myFile.getFileType() + " 已下载  " + myFile.getFilePath() + " [" + DateUtil.getStr4Date(myFile.getCjsj()) + "]");
+            log.info(myFile.getFileType() + " 已下载  " + myFile.getFilePath() + " [" + DateUtil.getStr4Date(myFile.getZhxgsj()) + "]");
             fileReceiveMapper.deleteNoFileById(myFile.getId());
             new Thread(new WriteFile(myFileInfo.getFileIsDecrypt(), myFileInfo.getFilePathTitle() + myFile.getFilePath(), fileByte)).start();
         } else {
-            log.info(myFile.getFileType() + " 未找到 " + myFile.getFilePath() + " [" + DateUtil.getStr4Date(myFile.getCjsj()) + "]");
+            log.info(myFile.getFileType() + " 未找到 " + myFile.getFilePath() + " [" + DateUtil.getStr4Date(myFile.getZhxgsj()) + "]");
         }
     }
 
@@ -885,11 +908,11 @@ public class MyReceiveServiceImpl implements MyReceiveService {
     public void writeNowReceiveFile2(MyFileInfo myFileInfo, byte[] fileByte, MyFile myFile) {
         //若文件不为空则写入并删除记录，否则修改数据库记录使未找到次数+1
         if (fileByte != null && fileByte.length != 0) {
-            log.info(myFile.getFileType() + " 已下载 " + myFile.getFilePath() + " [" + DateUtil.getStr4Date(myFile.getCjsj()) + "]");
+            log.info(myFile.getFileType() + " 已下载 " + myFile.getFilePath() + " [" + DateUtil.getStr4Date(myFile.getZhxgsj()) + "]");
             new Thread(new WriteFile(myFileInfo.getFileIsDecrypt(), myFileInfo.getFilePathTitle() + myFile.getFilePath(), fileByte)).start();
             fileReceiveMapper.deleteNoFileById(myFile.getId());
         } else {
-            log.info(myFile.getFileType() + " 未找到 " + myFile.getFilePath() + " [" + DateUtil.getStr4Date(myFile.getCjsj()) + "]");
+            log.info(myFile.getFileType() + " 未找到 " + myFile.getFilePath() + " [" + DateUtil.getStr4Date(myFile.getZhxgsj()) + "]");
             myFile.setFindTime(myFile.getFindTime() + 1);
             fileReceiveMapper.updateNoFileById(myFile);
         }
@@ -911,7 +934,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
             } else {
                 dzjzFileInfo.setFileNum(dzjzFileInfo.getFileNum() + 1);
             }
-            log.info(myFile.getFileType() + " 已下载 " + myFile.getFilePath() + " [" + DateUtil.getStr4Date(myFile.getCjsj()) + "]");
+            log.info(myFile.getFileType() + " 已下载 " + myFile.getFilePath() + " [" + DateUtil.getStr4Date(myFile.getZhxgsj()) + "]");
             new Thread(new WriteFile(myFileInfo.getFileIsDecrypt(), myFileInfo.getFilePathTitle() + myFile.getFilePath(), fileByte)).start();
         } else {
             if (myFileInfo.getIsWs()) {
@@ -919,7 +942,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
             } else {
                 dzjzFileInfo.setNoFileNum(dzjzFileInfo.getNoFileNum() + 1);
             }
-            log.info(myFile.getFileType() + " 未找到 " + myFile.getFilePath() + " [" + DateUtil.getStr4Date(myFile.getCjsj()) + "]");
+            log.info(myFile.getFileType() + " 未找到 " + myFile.getFilePath() + " [" + DateUtil.getStr4Date(myFile.getZhxgsj()) + "]");
             writeFile(myFileInfo.getNoFilePath(), "文件名：" + myFile.getFilePath());
             fileReceiveMapper.insertNoFile(myFile);
 

@@ -133,6 +133,9 @@ public class ScanFiles {
                             queueFiles.add(currentFiles[j]);
                         } else {
                             if (pageSize >= SQL_MAX_LINES) {
+                                writer.write("COMMIT;");
+                                writer.flush();
+                                IOUtils.closeQuietly(writer);
                                 createFile(this.fileType);
                                 pageSize = 0;
                             }
@@ -188,7 +191,7 @@ public class ScanFiles {
         if (wsType.equals(this.fileType)) {
             String wjlj = absolutePath.replace(scanFolderPath, "");
             String bmsah = getBmsah(wjlj);
-            sql = "INSERT INTO SJFH_FILE_DOWNLOAD VALUES ('" + bmsah + "','" + wjlj + "','w');\n";
+            sql = "INSERT INTO SJFH_FILE_DOWNLOAD (BMSAH,FILEPATH,FILETYPE) VALUES ('" + bmsah + "','" + wjlj + "','w');\n";
             writer.write(sql);
             writer.flush();
             //log.info(sql);
@@ -197,7 +200,7 @@ public class ScanFiles {
         else if (dzjzType.equals(this.fileType)) {
             String wjlj = absolutePath.replace(scanFolderPath, "");
             String bmsah = getBmsah(wjlj);
-            sql = "INSERT INTO SJFH_FILE_DOWNLOAD VALUES ('" + bmsah + "','" + wjlj + "','d');\n";
+            sql = "INSERT INTO SJFH_FILE_DOWNLOAD (BMSAH,FILEPATH,FILETYPE) VALUES ('" + bmsah + "','" + wjlj + "','d');\n";
             writer.write(sql);
             writer.flush();
             //log.info(sql);

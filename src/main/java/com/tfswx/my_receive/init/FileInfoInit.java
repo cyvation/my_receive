@@ -95,6 +95,8 @@ public class FileInfoInit implements CommandLineRunner {
         }
         testTables();
         if (isFindMyProperties) {//已存在 my_sjfh.properties
+            //先备份一份
+            FileUtil.copyFile(PropertiesUtil.propertiesFilePath,PropertiesUtil.propertiesFilePath+".bak");
             initFileInfoFromProp();
             log.warn("运行时配置信息从my_sjfh.properties加载完成");
         } else {//不存在my_sjfh.properties
@@ -325,11 +327,13 @@ public class FileInfoInit implements CommandLineRunner {
         }
         //文书获取触发器
         if (myReceiveService.findTrigger("FILE_WS_UPDATE") == 0) {
-            myReceiveService.createWsTrigger();
+            String dwbm="";
+            myReceiveService.createWsTrigger(dwbm);
         }
         //电子卷宗获取触发器
         if (myReceiveService.findTrigger("FILE_DZJZ_UPDATE") == 0) {
-            myReceiveService.createDzjzTrigger();
+            String dwbm="";
+            myReceiveService.createDzjzTrigger(dwbm);
         }
         //未找到文件表
         if (myReceiveService.findTables("SJFH_FILE_NOFILE") == 0) {

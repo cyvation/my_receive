@@ -39,14 +39,14 @@ public interface FileReceiveMapper {
      * @param
      * @return
      */
-    int getNewestNum();
+    int getNewestNum(Map<String,Object> map);
 
     /**
      * 获取最新发现的文件
      * @param
      * @return
      */
-    List<MyFile> getNewest();
+    List<MyFile> getNewest(Map<String,Object> map);
 
     /**
      * 通过【ID】删除最新发现的文件
@@ -67,14 +67,14 @@ public interface FileReceiveMapper {
      * @param
      * @return
      */
-    int getNoFileNumByFindTime(int findTime);
+    int getNoFileNumByFindTime(Map<String,Object> map);
 
     /**
      * 通过【findTime】没找到的次数获取没有找到的文件，小于
-     * @param findTime
+     * @param map
      * @return
      */
-    List<MyFile> getNoFileByFindTime(int findTime);
+    List<MyFile> getNoFileByFindTime(Map<String,Object> map);
 
     /**
      * 通过【ID】删除没找到的文件
@@ -121,9 +121,9 @@ public interface FileReceiveMapper {
      * 创触发器
      * @return
      */
-    void createDzjzTrigger();
+    void createDzjzTrigger(Map map);
 
-    void createWsTrigger();
+    void createWsTrigger(Map map);
 
     void createDownloadTable();
 }
