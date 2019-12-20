@@ -2,6 +2,7 @@ package com.tfswx.my_receive.mapper;
 
 
 import com.tfswx.my_receive.entity.MyFile;
+import com.tfswx.my_receive.entity.MyFileInfo;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -126,4 +127,8 @@ public interface FileReceiveMapper {
     void createWsTrigger(Map map);
 
     void createDownloadTable();
+
+    void insertDownload(MyFile myFile);
+
+    void cleanDownloadTable();
 }

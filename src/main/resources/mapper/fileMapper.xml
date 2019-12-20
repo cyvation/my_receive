@@ -225,12 +225,14 @@
         (
             BMSAH    VARCHAR2(100),
             FILEPATH VARCHAR2(500),
-            DWBM CHAR(6),
-            AJLB_BM CHAR(4),
+--             DWBM CHAR(6),
+--             AJLB_BM CHAR(4),
             FILETYPE CHAR(1)
         )
     </select>
 
-
+    <insert id="insertDownload" parameterType="com.tfswx.my_receive.entity.MyFile">
+        insert into SJFH_FILE_DOWNLOAD(BMSAH,FILEPATH,FILETYPE) VALUES (#{bmsah,jdbcType=VARCHAR},#{filePath,jdbcType=VARCHAR},#{fileType})
+    </insert>
 
 </mapper>

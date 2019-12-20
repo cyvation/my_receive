@@ -23,6 +23,7 @@ public class MyFile {
 
     int findTime;
 
+    String bmsah;
 
     public int getFindTime() {
         return findTime;
@@ -87,5 +88,13 @@ public class MyFile {
 
     public void setZhxgsj(Date zhxgsj) {
         this.zhxgsj = zhxgsj;
+    }
+
+    public String getBmsah() {
+        return bmsah;
+    }
+
+    public void setBmsah(String bmsah) {
+        this.bmsah = bmsah;
     }
 }

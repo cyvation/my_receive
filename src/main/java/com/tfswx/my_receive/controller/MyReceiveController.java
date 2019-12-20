@@ -1,6 +1,7 @@
 package com.tfswx.my_receive.controller;
 
 import com.tfswx.my_receive.service.MyReceiveService;
+import com.tfswx.my_receive.service.ScanFilesService;
 import com.tfswx.my_receive.utils.JsonResult;
 import com.tfswx.my_receive.utils.Parameters;
 import org.slf4j.Logger;
@@ -20,6 +21,8 @@ public class MyReceiveController {
     private static Logger log = LoggerFactory.getLogger(MyReceiveController.class);
     @Autowired
     MyReceiveService myReceiveService;
+    @Autowired
+    ScanFilesService scanFilesService;
 
     /**
      * 修改文件存放地址
@@ -157,7 +160,7 @@ public class MyReceiveController {
     @RequestMapping("/scanDownloadedFiles")
     @ResponseBody
     public JsonResult scanDownloadedFiles(String fileType) {
-        return myReceiveService.scanDownloadedFiles(fileType);
+        return scanFilesService.scanDownloadedFiles(fileType);
     }
 
 }

@@ -269,7 +269,7 @@
     <div style="padding: 10px">
         <table class="table table-bordered">
             <tr>
-                <th width="360px">文书存放(<font color="red">\结尾</font>)</th>
+                <th width="360px">文书存放路径(<font color="red">\结尾</font>)</th>
                 <td id="wsPath"></td>
                 <td>
                     <input type="button" value="修改" onclick="updateThis(this)">
@@ -322,10 +322,10 @@
                 </td>
             </tr>
             <tr>
-                <th>扫描已下载文书<font color="red">(*耗资源)</font></th>
+                <th>扫描已下载文书<font color="red">(*耗时)</font></th>
                 <td id="wsScan"><input type="button" value="确定" onclick="scanDownload('w',this)"></td>
                 <td>&nbsp;</td>
-                <th>扫描已下载电子卷宗<font color="red">(*耗资源)</font></th>
+                <th>扫描已下载电子卷宗<font color="red">(*耗时)</font></th>
                 <td id="dzjzScan"><input type="button" value="确定" onclick="scanDownload('d',this)"></td>
                 <td>&nbsp;</td>
             </tr>
@@ -352,10 +352,10 @@
             <tr>
                 <th>文书初始化同步起始时间(文书修改时间)</th>
                 <td width="12%"><input type="text" id="wsStartTime" placeholder="请选择时间"></td>
-                <td rowspan="2" width="15%" style="color: red;">*首次全量初始化时不要填时间；<br>时间条件常用于增补特定时段文件。</td>
+                <td rowspan="2" width="15%" style="color: red;">*首次全量初始化时不填时间；<br>时间条件常用于修补特定时段文件。</td>
                 <th>电子卷宗初始化同步起始时间(卷宗修改时间)</th>
                 <td width="12%"><input type="text" id="dzjzStartTime" placeholder="请选择时间"></td>
-                <td rowspan="2" style="color: red">*首次全量初始化时不要填时间；<br>时间条件常用于增补特定时段文件。</td>
+                <td rowspan="2" style="color: red">*首次全量初始化时不填时间；<br>时间条件常用于修补特定时段文件。</td>
             </tr>
             <tr>
 

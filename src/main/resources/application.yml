@@ -64,6 +64,6 @@ sendIp:
 findTimes: 2
 startYear: 2014
 #PageHelper分页大小
-pageSize: 1000
+pageSize: 500
 #每个sql文件最大行数， 默认 50万行
 sqlMaxLines: 500000

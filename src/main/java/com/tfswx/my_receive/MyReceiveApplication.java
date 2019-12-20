@@ -8,7 +8,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-import static com.tfswx.my_receive.utils.FileUtil.getIpAddress;
 
 @MapperScan("com.tfswx.my_receive.mapper")
 @EnableAsync

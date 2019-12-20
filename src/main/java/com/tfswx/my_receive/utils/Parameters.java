@@ -52,7 +52,7 @@ public class Parameters {
     public static final String wsType = "w";
 
     //分页大小
-    public  static int PAGE_SIZE = 1000;
+    public  static int PAGE_SIZE = 500;
 
     //数据同步起始默认年份
     public  static int START_YEAR = 2014;

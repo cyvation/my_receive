@@ -159,12 +159,12 @@ public class MyReceiveServiceImpl implements MyReceiveService {
             FileUtil.mkdirsFile(filePathTitle);
             //判断文件夹是否修改，更新配置类的信息，将信息写入配置文件和log文件
             if (new File(filePathTitle).exists()) {
-                writeFile(Parameters.wsFileInfo.getLogFilePath(), "文件接收地址改为：" + filePathTitle);
+                writeFile(Parameters.wsFileInfo.getLogFilePath(), "文书存放路径改为：" + filePathTitle);
                 Parameters.wsFileInfo.setFilePathTitle(filePathTitle);
                 updateProperties(Parameters.wsFileInfo, "FilePathTitle", Parameters.wsFileInfo.getFilePathTitle());
                 return new JsonResult("修改成功");
             }
-            return new JsonResult("修改失败");
+            return new JsonResult("修改失败，检查文件夹路径！");
         } else {
             //判断是否包含“\”，若包含则删除
             if (filePathTitle.endsWith("\\")) {
@@ -174,12 +174,12 @@ public class MyReceiveServiceImpl implements MyReceiveService {
             FileUtil.mkdirsFile(filePathTitle);
             //判断目录是否已经生成成功，更新配置类的信息，将信息写入配置文件和log文件
             if (new File(filePathTitle).exists()) {
-                writeFile(Parameters.dzjzFileInfo.getLogFilePath(), "文件接收地址改为：" + filePathTitle);
+                writeFile(Parameters.dzjzFileInfo.getLogFilePath(), "卷宗存放路径改为：" + filePathTitle);
                 Parameters.dzjzFileInfo.setFilePathTitle(filePathTitle);
                 updateProperties(Parameters.dzjzFileInfo, "FilePathTitle", Parameters.dzjzFileInfo.getFilePathTitle());
                 return new JsonResult("修改成功");
             }
-            return new JsonResult("修改失败");
+            return new JsonResult("修改失败，检查文件夹路径！");
         }
     }
 
@@ -356,36 +356,6 @@ public class MyReceiveServiceImpl implements MyReceiveService {
     }
 
     @Override
-    public JsonResult scanDownloadedFiles(String fileType) {
-        String msg = "文书";
-        if (dzjzType.equals(fileType)) {
-            msg = "电子卷宗";
-        }
-        log.warn("扫描已下载" + msg + "文件，" + fileType);
-        try {
-            String wsSaveSQLPath = Parameters.rootPath + "SJFH2\\ws\\download\\";
-            String dzjzSaveSQLPath = Parameters.rootPath + "SJFH2\\dzjz\\download\\";
-            long currentTimeMillis = System.currentTimeMillis();
-            long count = -1;
-            if (wsType.equals(fileType)) {
-                //存放已下载文书扫描sql文件
-                count = new ScanFiles(fileType, Parameters.wsFileInfo.getFilePathTitle(), wsSaveSQLPath).scanFilesWithNoRecursion();
-            } else if (dzjzType.equals(fileType)) {
-                //存放已下载电子卷宗扫描sql文件
-                count = new ScanFiles(fileType, Parameters.dzjzFileInfo.getFilePathTitle(), dzjzSaveSQLPath).scanFilesWithNoRecursion();
-            }
-            long times = (System.currentTimeMillis() - currentTimeMillis) / 60000;
-            msg = msg + "已下载文件扫描完成，总数：" + count + " ，耗时：" + times + "分钟 ；sql文件保存在：" + wsSaveSQLPath;
-            log.warn(msg);
-            return new JsonResult(msg);
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.error(e.getMessage());
-            return new JsonResult(JsonResult.ERROR, "扫描失败" + e.getMessage());
-        }
-    }
-
-    @Override
     public void testIsBreak() {
         //判断是否有时间信息，有则立即进行同步
         if (Parameters.wsFileInfo.getStartDate() != null && Parameters.wsFileInfo.getEndDate() != null) {
@@ -481,7 +451,7 @@ public class MyReceiveServiceImpl implements MyReceiveService {
         log.info(synStartLog);
 
         int pages = totalRows / PAGE_SIZE + (totalRows % PAGE_SIZE == 0L ? 0 : 1);//算法借鉴com.github.pagehelper.Page::public void setTotal(long total)
-        //按页面大小循环
+        //按页大小循环
         for (int i = 1; i <= pages; i++) {
             List<MyFile> fileList;
             if (myFileInfo.getIsWs()) {
@@ -507,13 +477,13 @@ public class MyReceiveServiceImpl implements MyReceiveService {
             }
             //强制提交事务
             transactionManager.commit(status);
+//            forceCommit();
             //记录同步数量写入文件
             int fileCount = myFileInfo.getIsWs() ? wsFileInfo.getFileNum() : dzjzFileInfo.getFileNum();
             int notFindCount = myFileInfo.getIsWs() ? wsFileInfo.getNoFileNum() : dzjzFileInfo.getNoFileNum();
             updateProperties(myFileInfo, "FileNum ", String.valueOf(fileCount));
             updateProperties(myFileInfo, "NoFileNum ", String.valueOf(notFindCount));
             try {
-                //休息下，给其他线程留点左右
                 TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
                 e.printStackTrace();
