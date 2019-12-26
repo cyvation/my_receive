@@ -483,11 +483,11 @@ public class MyReceiveServiceImpl implements MyReceiveService {
             int notFindCount = myFileInfo.getIsWs() ? wsFileInfo.getNoFileNum() : dzjzFileInfo.getNoFileNum();
             updateProperties(myFileInfo, "FileNum ", String.valueOf(fileCount));
             updateProperties(myFileInfo, "NoFileNum ", String.valueOf(notFindCount));
-            try {
+            /*try {
                 TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            }
+            }*/
         }
 
         String synEndLog = "文件同步结束时间：" + getStr4Date(new Date()) + "\r\n" +
@@ -543,9 +543,9 @@ public class MyReceiveServiceImpl implements MyReceiveService {
         /*if (myFileInfo.getFileNum() > 0) {
             updateProperties(myFileInfo, "FileNum", String.valueOf(myFileInfo.getFileNum()));
         }*/
-        if (myFileInfo.getNoFileNum() > 0) {
+//        if (myFileInfo.getNoFileNum() > 0) {
             updateProperties(myFileInfo, "NoFileNum", String.valueOf(myFileInfo.getNoFileNum()));
-        }
+//        }
         updateProperties(myFileInfo, "FileSynchronousSwitch", "true");
         updateProperties(myFileInfo, "FileSynchState", "false");
         stopCron(myFileInfo);
@@ -988,9 +988,9 @@ public class MyReceiveServiceImpl implements MyReceiveService {
     //修改自定义Properties配置文件
     public void updateProperties(MyFileInfo myFileInfo, String key, String value) {
         if (myFileInfo.getIsWs()) {
-            Parameters.propertiesUtil.setProperty(FileInfoInit.WS + key, value);
+            Parameters.propertiesUtil.setProperty(FileInfoInit.WS + StringUtils.trim(key), value);
         } else {
-            Parameters.propertiesUtil.setProperty(FileInfoInit.DZJZ + key, value);
+            Parameters.propertiesUtil.setProperty(FileInfoInit.DZJZ + StringUtils.trim(key), value);
         }
     }
 
